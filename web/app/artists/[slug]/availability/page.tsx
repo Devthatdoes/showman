@@ -1,8 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/db";
+import { getCurrentUser } from "@/lib/session";
 import type { AvailabilityWindow } from "@/db/schema";
 import { addAvailabilityWindow, deleteAvailabilityWindow } from "./actions";
 
@@ -125,6 +126,9 @@ export default async function AvailabilityPage({
     where: (a, { eq }) => eq(a.slug, slug),
   });
   if (!artist) notFound();
+
+  const user = await getCurrentUser();
+  if (!user || user.id !== artist.ownerUserId) redirect(`/artists/${slug}`);
 
   const windows = await db.query.availabilityWindows.findMany({
     where: (w, { eq, and }) => and(eq(w.artistId, artist.id)),
