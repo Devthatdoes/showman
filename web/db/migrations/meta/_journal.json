@@ -15,6 +15,13 @@
       "when": 1782387240846,
       "tag": "0001_wild_vengeance",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782389620778,
+      "tag": "0002_early_scourge",
+      "breakpoints": true
     }
   ]
 }
