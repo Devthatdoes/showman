@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/db";
+import { getCurrentUser } from "@/lib/session";
 
 export default async function ArtistProfilePage({
   params,
@@ -18,6 +19,9 @@ export default async function ArtistProfilePage({
   if (!artist) {
     notFound();
   }
+
+  const user = await getCurrentUser();
+  const isOwner = !!user && user.id === artist.ownerUserId;
 
   const today = new Date().toISOString().slice(0, 10);
   const upcomingWindows = await db.query.availabilityWindows.findMany({
@@ -92,14 +96,22 @@ export default async function ArtistProfilePage({
                 <p className="text-sm text-zinc-400">No upcoming availability listed.</p>
               )}
             </div>
-            <div className="mt-4">
-              <Link
-                href={`/artists/${slug}/availability`}
-                className="inline-flex items-center rounded-lg border border-zinc-700 bg-transparent px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-800"
-              >
-                Manage availability →
-              </Link>
-            </div>
+            {isOwner && (
+              <div className="mt-4 flex items-center gap-3">
+                <Link
+                  href={`/artists/${slug}/edit`}
+                  className="inline-flex items-center rounded-lg border border-zinc-700 bg-transparent px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-800"
+                >
+                  Edit profile
+                </Link>
+                <Link
+                  href={`/artists/${slug}/availability`}
+                  className="inline-flex items-center rounded-lg border border-zinc-700 bg-transparent px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-800"
+                >
+                  Manage availability →
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
