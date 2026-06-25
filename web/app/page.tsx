@@ -3,17 +3,6 @@ import Link from "next/link";
 export default function Home() {
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <nav className="border-b border-zinc-800 px-6 py-4">
-        <div className="mx-auto flex max-w-2xl items-center gap-6 text-sm text-zinc-400">
-          <Link href="/" className="font-semibold text-zinc-100 hover:text-zinc-100">
-            showman
-          </Link>
-          <Link href="/artists" className="hover:text-zinc-100">
-            Artists
-          </Link>
-        </div>
-      </nav>
-
       <div className="mx-auto max-w-2xl px-6 py-16">
         <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
           <h1 className="text-3xl font-semibold tracking-tight">showman</h1>

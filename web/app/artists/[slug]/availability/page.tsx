@@ -143,21 +143,6 @@ export default async function AvailabilityPage({
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      {/* nav */}
-      <nav className="border-b border-zinc-800">
-        <div className="mx-auto flex max-w-3xl items-center gap-6 px-6 py-4 text-sm text-zinc-400">
-          <Link
-            href="/"
-            className="font-semibold tracking-tight text-zinc-100 hover:text-white"
-          >
-            showman
-          </Link>
-          <Link href="/artists" className="hover:text-zinc-100">
-            Artists
-          </Link>
-        </div>
-      </nav>
-
       <div className="mx-auto max-w-3xl px-6 py-16 space-y-10">
         {/* back link */}
         <div>

@@ -12,15 +12,6 @@ export default async function ArtistsPage() {
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="mx-auto max-w-3xl px-6 py-16">
-        <nav className="mb-12 flex items-center gap-6 text-sm text-zinc-400">
-          <Link href="/" className="font-semibold tracking-tight text-zinc-100 hover:text-zinc-100">
-            showman
-          </Link>
-          <Link href="/artists" className="hover:text-zinc-100">
-            Artists
-          </Link>
-        </nav>
-
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-3xl font-semibold tracking-tight">Artists</h1>
           <Link

@@ -4,17 +4,6 @@ import { createArtistProfile } from "@/app/artists/actions";
 export default function NewArtistPage() {
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <nav className="border-b border-zinc-800 px-6 py-4">
-        <div className="mx-auto flex max-w-2xl items-center gap-6">
-          <Link href="/" className="text-sm font-medium text-zinc-100 hover:text-zinc-100">
-            showman
-          </Link>
-          <Link href="/artists" className="text-sm text-zinc-400 hover:text-zinc-100">
-            Artists
-          </Link>
-        </div>
-      </nav>
-
       <div className="mx-auto max-w-2xl px-6 py-16">
         <h1 className="text-3xl font-semibold tracking-tight">New artist profile</h1>
         <p className="mt-2 text-zinc-400">
