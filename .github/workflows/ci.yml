@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: web checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: showman
+          POSTGRES_PASSWORD: showman
+          POSTGRES_DB: showman
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U showman -d showman"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://showman:showman@localhost:5432/showman
+      # Placeholder values for build only (no real secrets).
+      BETTER_AUTH_SECRET: ci-placeholder-secret-not-used-in-any-real-env-0123456789
+      BETTER_AUTH_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Migrate (fresh database)
+        run: npx tsx db/migrate.ts
+
+      - name: Build
+        run: npm run build
