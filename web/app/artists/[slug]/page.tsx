@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/db";
-import { availabilityWindows } from "@/db/schema";
 
 export default async function ArtistProfilePage({
   params,
