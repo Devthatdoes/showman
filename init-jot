@@ -1,0 +1,27 @@
+I have an idea about a web app / software that basically allows artists or their managers to post their booking fee and have legit booker/talent agents/show curators be able to book them directly on this app.
+This would help a lot of the nag when it comes to booking artists and making shows a success.
+This would ideally help both artists and those looking to book artists, and also managers and labels on both sides potentially.
+There would have to be solid verification in this app to ensure a few integral base level things,
+like the artist or their team/manager being the official artist and team, there would have to be a surefire way to verify this as this would be the entire basis of trust of this software.
+There would have to be a very solid payment infrastructure as there may be large amounts of money being paid here.
+There would have to be a deposit structure and a way to reimburse or ensure that artists that are booked actually perform as per what was agreed and that the bookers actually are paying and liable to pay.
+There must be a way to ensure that bookers cannot only pay the deposit and not pay after the artist has fulfilled their part.
+There must be a way to ensure an artist not being screwed by the booker falsely disputing their agreement.
+There must be a way that both sides could potentially negotiate, maybe something similar to a offer/counter-offer framework, where the artist would probably have a set price and maybe a minimum price nd then they can negotiate and offer/counter-offer from there.
+There must be a way to ensure that the artist is actually available on their available dates shown, and there must be a way to ensure that the artist is notified and able to confirm or deny that they will be doing a specific booking.
+There should be a way to have a manager or label who has multiple artists to sort of group them or coordinate them in a manner that is more organized for their multiple artists, as in maybe they want to book artists under the same team together or the same booker wants to book different artists and to avoid extra complications of having multiple requests for the same team essentially.
+There should be real structure throughout this entire software to ensure that it is extremely secure end to end, that it is modular and structurally sound and organized, that it is able to be understood as it scales and that it is able to scale.
+There should be some type of profile or pitch features where a booker or artist has somewhat of a profile to be seen to help in decisions, as in the booker could have their profile so that when an artist recieves a request they can gain an initial grasp of who the booker is,
+there should also be a pitch feature to explain in the request what the specific event or "thing" that they are requesting to bookt he artist for.
+This should also be well designed and not just scrpped together to be barely functional, it should be visually pleasing and be "cool" to use.
+It should be well though-out and planned at every state to ensure that it can be well adopted by the industry.
+There may even be a feature that allows an artist to reach out to a potential booker's profile? Although this may cause spam and overloads of cold messages.
+There should be a strong and solid system when a booking is confirmed so that there is no confusion at all, in fact this part should be well designed and cool. 
+As in say "Prince" was the artist and the booker was able to successfully come to an agreement with Prince, then there would not only be notifications but real UI in the software or web app that shoows that "Prince is confirmed for (the said event)", as this could even be used for promotional reasons maybe.
+There should also be integrations into things like email, or slack possiblym especially for teams that need to run things at a larger scale like festivals or labels who need to be coordinated across an entire project or workflows.
+Done correctly this can be a very well valued and needed software that solves a real issue within the entertainment industry currently and would make it easier for both sides to earn money.
+Some of the biggest concerns as of now is how to regulate between unserious people or spam on the software and to ensure that it is a solid platform for real bookings and opportunities to be brought to fruition.
+Also it seems like the artists might be the easiest to onboard to the software but getting solid bookers and festivals and such might possibly be more difficult as they usually already have booking agents and personal relationships for coordinate their bookings.
+Ideally if this software is able to be adopted to aid in the process rather than fully eliminate entire roles of people or entire workflows from the ground.
+This is almost like any other booking software like booksy or airbnb but more niche for this exact software. Architecturally though, many things can be learned from other booking platforms and software regarding software design and architectural design and learning how they managed to scale just to 
+ensure that it is even possible to scale this when it picks up. I do not even want to touch code until a very core solid foundations in planning, architecture, logistics, and design has been sculpted.

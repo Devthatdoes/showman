@@ -1,0 +1,12 @@
+# Local Claude Code tooling / local settings
+/.claude/
+
+# Safety nets (web/ has its own .gitignore for the app itself)
+**/node_modules/
+**/.next/
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
