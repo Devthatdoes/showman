@@ -1,4 +1,5 @@
 import { pgTable, uuid, varchar, text, jsonb, timestamp, date, pgEnum, index } from "drizzle-orm/pg-core";
+import { user } from "./auth-schema";
 
 /**
  * ArtistProfile — the supply-side principal (the bookable act). See docs/foundation/02-domain-model.md §1.2.
@@ -15,6 +16,9 @@ export const artistProfiles = pgTable("artist_profiles", {
   bio: text("bio"),
   genres: jsonb("genres").$type<string[]>().notNull().default([]),
   homeMarket: varchar("home_market", { length: 120 }),
+  // User-level ownership (Better Auth user). Org/Membership ownership comes later (doc 07).
+  // Nullable so pre-auth seed rows survive; set null on user deletion so profiles are never destroyed.
+  ownerUserId: text("owner_user_id").references(() => user.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

@@ -1,0 +1,2 @@
+ALTER TABLE "artist_profiles" ADD COLUMN "owner_user_id" text;--> statement-breakpoint
+ALTER TABLE "artist_profiles" ADD CONSTRAINT "artist_profiles_owner_user_id_user_id_fk" FOREIGN KEY ("owner_user_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;
