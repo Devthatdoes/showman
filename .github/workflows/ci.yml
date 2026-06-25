@@ -62,3 +62,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Integration tests (auth/ownership gates)
+        run: npx start-server-and-test "next start" http://localhost:3000 "node --test tests/gates.test.mjs"

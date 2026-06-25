@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --test tests/gates.test.mjs"
   },
   "dependencies": {
     "better-auth": "^1.6.20",
@@ -26,6 +27,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "start-server-and-test": "^3.0.11",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
     "typescript": "^5"
