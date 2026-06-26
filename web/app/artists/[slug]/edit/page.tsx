@@ -2,16 +2,14 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import { updateArtistProfile, deleteArtistProfile } from "@/app/artists/actions";
-import { db } from "@/db";
+import { getArtistProfileBySlug } from "@/server/catalog/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function EditArtistPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  const profile = await db.query.artistProfiles.findFirst({
-    where: (a, { eq }) => eq(a.slug, slug),
-  });
+  const profile = await getArtistProfileBySlug(slug);
 
   if (!profile) notFound();
 

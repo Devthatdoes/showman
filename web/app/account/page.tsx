@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
 import SignOutButton from "@/components/sign-out-button";
+import { listArtistProfilesForOwner } from "@/server/catalog/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +16,7 @@ export default async function AccountPage() {
 
   const { user } = session;
 
-  const profiles = await db.query.artistProfiles.findMany({
-    where: (a, { eq }) => eq(a.ownerUserId, user.id),
-    orderBy: (a, { desc }) => desc(a.createdAt),
-  });
+  const profiles = await listArtistProfilesForOwner(user.id);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">

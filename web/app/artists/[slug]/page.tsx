@@ -2,8 +2,11 @@ export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { db } from "@/db";
 import { getCurrentUser } from "@/lib/session";
+import {
+  getArtistProfileBySlug,
+  getUpcomingOpenAvailabilityForArtist,
+} from "@/server/catalog/queries";
 
 export default async function ArtistProfilePage({
   params,
@@ -12,9 +15,7 @@ export default async function ArtistProfilePage({
 }) {
   const { slug } = await params;
 
-  const artist = await db.query.artistProfiles.findFirst({
-    where: (a, { eq }) => eq(a.slug, slug),
-  });
+  const artist = await getArtistProfileBySlug(slug);
 
   if (!artist) {
     notFound();
@@ -23,13 +24,7 @@ export default async function ArtistProfilePage({
   const user = await getCurrentUser();
   const isOwner = !!user && user.id === artist.ownerUserId;
 
-  const today = new Date().toISOString().slice(0, 10);
-  const upcomingWindows = await db.query.availabilityWindows.findMany({
-    where: (w, { and, eq, gte }) =>
-      and(eq(w.artistId, artist.id), eq(w.status, "open"), gte(w.endDate, today)),
-    orderBy: (w, { asc }) => asc(w.startDate),
-    limit: 3,
-  });
+  const upcomingWindows = await getUpcomingOpenAvailabilityForArtist(artist.id);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">

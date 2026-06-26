@@ -1,13 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { db } from "@/db";
-import { type ArtistProfile } from "@/db/schema";
+import { listArtistProfiles } from "@/server/catalog/queries";
 
 export default async function ArtistsPage() {
-  const artists = await db.query.artistProfiles.findMany({
-    orderBy: (a, { desc }) => desc(a.createdAt),
-  });
+  const artists = await listArtistProfiles();
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -36,7 +33,7 @@ export default async function ArtistsPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {artists.map((artist: ArtistProfile) => (
+            {artists.map((artist) => (
               <Link
                 key={artist.id}
                 href={`/artists/${artist.slug}`}
