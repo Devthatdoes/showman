@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import SignOutButton from "@/components/sign-out-button";
+import { buttonStyles } from "@/components/ui/button";
+import { panelStyles } from "@/components/ui/panel";
 import { listArtistProfilesForOwner } from "@/server/catalog/queries";
 
 export const dynamic = "force-dynamic";
@@ -19,44 +21,47 @@ export default async function AccountPage() {
   const profiles = await listArtistProfilesForOwner(user.id);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="mx-auto max-w-md px-6 py-16 flex flex-col gap-8">
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 flex flex-col gap-4">
-          <h1 className="text-3xl font-semibold tracking-tight">Your account</h1>
+    <div className="min-h-screen">
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14 flex flex-col gap-8">
+        <div className={`${panelStyles("elevated")} p-6 sm:p-8 flex flex-col gap-5`}>
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#ffb06a]">
+            Account
+          </p>
+          <h1 className="text-3xl font-black uppercase tracking-[-0.05em] text-[var(--showman-bone)]">
+            Your account
+          </h1>
+          <p className="max-w-2xl text-sm leading-6 text-[var(--showman-muted)]">
+            Your profiles are the supply-side base of showman. Orgs, teams, and on-behalf-of roles come next.
+          </p>
           <div className="flex flex-col gap-2">
-            <p className="text-zinc-100 font-medium">{user.name}</p>
-            <p className="text-zinc-400 text-sm">{user.email}</p>
-            <p className="text-zinc-500 text-xs font-mono">{user.id}</p>
+            <p className="font-medium text-[var(--showman-bone)]">{user.name}</p>
+            <p className="text-sm text-[var(--showman-muted)]">{user.email}</p>
+            <p className="font-mono text-xs text-[var(--showman-muted)]">{user.id}</p>
           </div>
-          <div className="flex flex-col gap-3 pt-2">
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
             <SignOutButton />
-            <Link
-              href="/artists"
-              className="inline-flex items-center justify-center rounded-lg border border-zinc-700 bg-transparent px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-800"
-            >
+            <Link href="/artists" className={buttonStyles("secondary")}>
               Browse artists
             </Link>
           </div>
         </div>
 
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold tracking-tight">Your profiles</h2>
-            <Link
-              href="/artists/new"
-              className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-emerald-400"
-            >
+          <div className="flex items-end justify-between gap-4">
+            <h2 className="text-xl font-bold tracking-[-0.03em] text-[var(--showman-bone)]">
+              Your profiles
+            </h2>
+            <Link href="/artists/new" className={buttonStyles("primary")}>
               Add profile
             </Link>
           </div>
 
           {profiles.length === 0 ? (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 flex flex-col gap-4 items-center text-center">
-              <p className="text-zinc-400 text-sm">You have not created any profiles yet.</p>
-              <Link
-                href="/artists/new"
-                className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-emerald-400"
-              >
+            <div className={`${panelStyles("subtle")} flex flex-col items-center gap-4 p-8 text-center`}>
+              <p className="text-sm leading-6 text-[var(--showman-muted)]">
+                You have not created any profiles yet.
+              </p>
+              <Link href="/artists/new" className={buttonStyles("primary")}>
                 Add profile
               </Link>
             </div>
@@ -65,18 +70,19 @@ export default async function AccountPage() {
               {profiles.map((p) => (
                 <div
                   key={p.slug}
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 flex items-center justify-between gap-4"
+                  className={`${panelStyles("subtle")} flex items-center justify-between gap-4 p-4 sm:p-5`}
                 >
-                  <Link href={`/artists/${p.slug}`} className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-sm font-medium text-zinc-100 truncate">{p.stageName}</span>
+                  <Link href={`/artists/${p.slug}`} className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-[var(--showman-bone)]">
+                      {p.stageName}
+                    </span>
                     {p.homeMarket && (
-                      <span className="text-xs text-zinc-400 truncate">{p.homeMarket}</span>
+                      <span className="block truncate text-xs text-[var(--showman-muted)]">
+                        {p.homeMarket}
+                      </span>
                     )}
                   </Link>
-                  <Link
-                    href={`/artists/${p.slug}/edit`}
-                    className="shrink-0 inline-flex items-center rounded-lg border border-zinc-700 bg-transparent px-3 py-1.5 text-xs font-medium text-zinc-100 hover:bg-zinc-800"
-                  >
+                  <Link href={`/artists/${p.slug}/edit`} className={buttonStyles("secondary")}>
                     Edit
                   </Link>
                 </div>

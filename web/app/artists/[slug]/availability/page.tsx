@@ -9,6 +9,14 @@ import {
   getArtistProfileBySlug,
   listAvailabilityForArtist,
 } from "@/server/catalog/queries";
+import { buttonStyles } from "@/components/ui/button";
+import { badgeStyles } from "@/components/ui/badge";
+import {
+  fieldClassName,
+  helpTextClassName,
+  labelClassName,
+} from "@/components/ui/form";
+import { panelStyles } from "@/components/ui/panel";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -81,13 +89,13 @@ function MonthGrid({
   }
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6">
-      <h3 className="mb-4 text-sm font-semibold tracking-wide text-zinc-300">
+    <div className={`${panelStyles("subtle")} p-5 sm:p-6`}>
+      <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--showman-muted)]">
         {title}
       </h3>
       <div className="grid grid-cols-7 gap-px text-center text-xs">
         {DAY_LABELS.map((d) => (
-          <div key={d} className="pb-1 font-medium text-zinc-500">
+          <div key={d} className="pb-1 font-medium text-[var(--showman-muted)]">
             {d}
           </div>
         ))}
@@ -97,13 +105,13 @@ function MonthGrid({
           }
           const coverage = isCovered(cell.dateStr, windows);
           let cls =
-            "rounded p-1 border font-medium text-zinc-500 border-zinc-800";
+            "rounded border border-[var(--showman-line)] p-1 font-medium text-[var(--showman-muted)]";
           if (coverage === "blocked") {
             cls =
-              "rounded p-1 border font-medium bg-rose-500/15 text-rose-300 border-rose-500/30";
+              "rounded border border-[rgba(255,92,122,0.35)] bg-[rgba(255,92,122,0.12)] p-1 font-medium text-[var(--showman-danger)]";
           } else if (coverage === "open") {
             cls =
-              "rounded p-1 border font-medium bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+              "rounded border border-[rgba(110,231,168,0.35)] bg-[rgba(110,231,168,0.12)] p-1 font-medium text-[var(--showman-success)]";
           }
           return (
             <div key={cell.dateStr} className={cls}>
@@ -144,90 +152,73 @@ export default async function AvailabilityPage({
   ];
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="mx-auto max-w-3xl px-6 py-16 space-y-10">
-        {/* back link */}
-        <div>
-          <Link
-            href={`/artists/${slug}`}
-            className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-100"
-          >
-            <span aria-hidden="true">&#8592;</span>
-            Back to profile
-          </Link>
-        </div>
+    <main className="min-h-screen">
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14 space-y-10">
+        <Link
+          href={`/artists/${slug}`}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--showman-muted)] transition-colors hover:text-[var(--showman-bone)]"
+        >
+          <span aria-hidden="true">&#8592;</span>
+          Back to profile
+        </Link>
 
-        {/* heading */}
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#ffb06a]">
+            Availability management
+          </p>
+          <h1 className="mt-2 text-3xl font-black uppercase tracking-[-0.05em] text-[var(--showman-bone)] sm:text-4xl">
             Availability
           </h1>
-          <p className="mt-1 text-zinc-400">{artist.stageName}</p>
+          <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">{artist.stageName}</p>
         </div>
 
-        {/* ── add window form ── */}
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6">
-          <h2 className="mb-5 text-sm font-semibold text-zinc-300 uppercase tracking-wide">
+        <div className={`${panelStyles("elevated")} p-6 sm:p-8`}>
+          <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--showman-muted)]">
             Add a window
           </h2>
-          <form action={addAvailabilityWindow} className="space-y-4">
+          <form action={addAvailabilityWindow} className="mt-5 space-y-4">
             <input type="hidden" name="slug" value={slug} />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="startDate"
-                  className="text-xs font-medium text-zinc-400"
-                >
-                  Start date <span className="text-rose-400">*</span>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="startDate" className={labelClassName}>
+                  Start date <span className="text-[var(--showman-danger)]">*</span>
                 </label>
                 <input
                   type="date"
                   id="startDate"
                   name="startDate"
                   required
-                  className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm"
+                  className={fieldClassName}
                 />
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="endDate"
-                  className="text-xs font-medium text-zinc-400"
-                >
+              <div className="flex flex-col gap-2">
+                <label htmlFor="endDate" className={labelClassName}>
                   End date
                 </label>
                 <input
                   type="date"
                   id="endDate"
                   name="endDate"
-                  className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm"
+                  className={fieldClassName}
                 />
               </div>
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="status"
-                className="text-xs font-medium text-zinc-400"
-              >
+            <div className="flex flex-col gap-2">
+              <label htmlFor="status" className={labelClassName}>
                 Status
               </label>
-              <select
-                id="status"
-                name="status"
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm"
-              >
+              <select id="status" name="status" className={fieldClassName}>
                 <option value="open">Open (available)</option>
                 <option value="blocked">Blocked (unavailable)</option>
               </select>
+              <p className={helpTextClassName}>Blocked overrides open if the dates overlap.</p>
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="market"
-                className="text-xs font-medium text-zinc-400"
-              >
+            <div className="flex flex-col gap-2">
+              <label htmlFor="market" className={labelClassName}>
                 Market
               </label>
               <input
@@ -235,15 +226,12 @@ export default async function AvailabilityPage({
                 id="market"
                 name="market"
                 placeholder="e.g. New York, NY"
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm"
+                className={fieldClassName}
               />
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="note"
-                className="text-xs font-medium text-zinc-400"
-              >
+            <div className="flex flex-col gap-2">
+              <label htmlFor="note" className={labelClassName}>
                 Note
               </label>
               <input
@@ -251,28 +239,24 @@ export default async function AvailabilityPage({
                 id="note"
                 name="note"
                 placeholder="Optional note"
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm"
+                className={fieldClassName}
               />
             </div>
 
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-xs text-zinc-500">
+            <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className={helpTextClassName}>
                 End date optional — defaults to the start date. Phase 0: open /
                 blocked only.
               </p>
-              <button
-                type="submit"
-                className="inline-flex items-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-emerald-400 whitespace-nowrap"
-              >
+              <button type="submit" className={buttonStyles("primary")}>
                 Add window
               </button>
             </div>
           </form>
         </div>
 
-        {/* ── two-month calendar grid ── */}
         <div>
-          <h2 className="mb-4 text-sm font-semibold text-zinc-300 uppercase tracking-wide">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--showman-muted)]">
             Calendar
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -285,27 +269,19 @@ export default async function AvailabilityPage({
               />
             ))}
           </div>
-          {/* legend */}
-          <div className="mt-3 flex items-center gap-4 text-xs text-zinc-400">
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block h-3 w-3 rounded bg-emerald-500/30 border border-emerald-500/40" />
-              Available
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block h-3 w-3 rounded bg-rose-500/30 border border-rose-500/40" />
-              Blocked
-            </span>
+          <div className="mt-3 flex items-center gap-3 text-xs text-[var(--showman-muted)]">
+            <span className={badgeStyles("open")}>Available</span>
+            <span className={badgeStyles("blocked")}>Blocked</span>
           </div>
         </div>
 
-        {/* ── windows list ── */}
         <div>
-          <h2 className="mb-4 text-sm font-semibold text-zinc-300 uppercase tracking-wide">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--showman-muted)]">
             Windows
           </h2>
 
           {windows.length === 0 ? (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-center text-sm text-zinc-500">
+            <div className={`${panelStyles("subtle")} p-6 text-center text-sm text-[var(--showman-muted)]`}>
               No availability windows yet. Add one above to get started.
             </div>
           ) : (
@@ -313,28 +289,24 @@ export default async function AvailabilityPage({
               {windows.map((w) => (
                 <li
                   key={w.id}
-                  className="flex items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 px-5 py-4"
+                  className={`${panelStyles("subtle")} flex items-center justify-between gap-4 px-5 py-4`}
                 >
                   <div className="flex flex-wrap items-center gap-3 min-w-0">
-                    <span className="text-sm font-medium text-zinc-100 tabular-nums">
+                    <span className="text-sm font-semibold text-[var(--showman-bone)] tabular-nums">
                       {formatDateRange(w.startDate, w.endDate)}
                     </span>
 
                     {w.status === "open" ? (
-                      <span className="rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-xs text-emerald-300">
-                        open
-                      </span>
+                      <span className={badgeStyles("open")}>Open</span>
                     ) : (
-                      <span className="rounded-full bg-rose-500/15 border border-rose-500/30 px-2.5 py-0.5 text-xs text-rose-300">
-                        blocked
-                      </span>
+                      <span className={badgeStyles("blocked")}>Blocked</span>
                     )}
 
                     {w.market && (
-                      <span className="text-xs text-zinc-400">{w.market}</span>
+                      <span className="text-xs text-[var(--showman-muted)]">{w.market}</span>
                     )}
                     {w.note && (
-                      <span className="text-xs text-zinc-500 italic truncate max-w-xs">
+                      <span className="max-w-xs truncate text-xs italic text-[var(--showman-muted)]">
                         {w.note}
                       </span>
                     )}
@@ -343,10 +315,7 @@ export default async function AvailabilityPage({
                   <form action={deleteAvailabilityWindow} className="shrink-0">
                     <input type="hidden" name="id" value={w.id} />
                     <input type="hidden" name="slug" value={slug} />
-                    <button
-                      type="submit"
-                      className="inline-flex items-center rounded-lg border border-zinc-700 bg-transparent px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-800"
-                    >
+                    <button type="submit" className={buttonStyles("ghost")}>
                       Remove
                     </button>
                   </form>

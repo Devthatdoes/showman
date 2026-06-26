@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { buttonStyles } from "@/components/ui/button";
 
 export default function SignOutButton() {
   const router = useRouter();
@@ -17,9 +18,10 @@ export default function SignOutButton() {
 
   return (
     <button
+      type="button"
       onClick={handleSignOut}
       disabled={pending}
-      className="inline-flex items-center justify-center rounded-lg border border-zinc-700 bg-transparent px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-800 disabled:opacity-60"
+      className={buttonStyles("ghost")}
     >
       {pending ? "Signing out..." : "Sign out"}
     </button>
