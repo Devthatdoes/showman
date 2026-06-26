@@ -1,111 +1,71 @@
-import Link from "next/link";
-import LivingBookingBrief from "@/components/landing/living-booking-brief";
-import { buttonStyles } from "@/components/ui/button";
-import {
-  audienceDoors,
-  sceneCards,
-  trustPromises,
-  workflowSteps,
-} from "@/lib/landing-content";
+import FluidBackground from "@/components/landing/fluid-background";
+import RevealOnScroll from "@/components/landing/reveal-on-scroll";
+import HomeArtistExperience from "@/components/landing/home-artist-experience";
+import { listPublicArtistProfiles } from "@/server/catalog/queries";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const artistProfiles = await listPublicArtistProfiles({ limit: 6 });
+  const artists = artistProfiles.map((artist) => ({
+    slug: artist.slug,
+    stageName: artist.stageName,
+    bio: artist.bio,
+    imageUrl: artist.imageUrl,
+    primaryGenre: artist.primaryGenre,
+    genres: artist.genres,
+    homeMarket: artist.homeMarket,
+  }));
+
   return (
-    <main className="overflow-hidden">
-      <section className="relative min-h-[calc(100vh-65px)] px-4 py-10 sm:px-6 lg:py-14">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.76fr_1.24fr] lg:items-end">
-          <div className="max-w-xl pb-2 lg:pb-10">
-            <p className="mb-5 text-xs font-extrabold uppercase tracking-[0.24em] text-[#ffb06a]">
-              Booking infrastructure for live culture
+    <main className="raw-home">
+      <FluidBackground />
+      <RevealOnScroll />
+      <div className="raw-grain" aria-hidden="true" />
+
+      <section className="raw-hero">
+        <div className="raw-hero__inner raw-reveal">
+          <h1>
+            Book the <span>rawest</span> artists.
+          </h1>
+          <p className="raw-hero__copy">
+            For the real artists and teams, Live & Direct access,
+            Booking made for doers.
+          </p>
+
+          <form className="raw-search" action="/artists">
+            <label className="sr-only" htmlFor="raw-search-input">
+              Search artists
+            </label>
+            <input
+              id="raw-search-input"
+              name="q"
+              placeholder="Find an artist by name, genre, or city"
+              type="search"
+            />
+            <button type="submit">Search</button>
+          </form>
+        </div>
+      </section>
+
+      <section className="raw-section" id="artists">
+        <HomeArtistExperience artists={artists} />
+      </section>
+
+      <section className="raw-section raw-bookers raw-booking-lane" id="bookers">
+        <div className="raw-section__head raw-reveal">
+          <h2>Bookers</h2>
+          <p>Request access to real artist teams without exposing private booking details publicly.</p>
+        </div>
+        <div className="raw-booking-lane__body raw-reveal">
+          <div>
+            <h3>Booker onboarding belongs in the product flow.</h3>
+            <p>
+              The next foundation step is a real booker-side onboarding lane:
+              venue, promoter, agency, label, budget posture, markets, and verification.
             </p>
-            <h1 className="text-5xl font-black uppercase leading-[0.88] tracking-normal text-[var(--showman-bone)] sm:text-7xl lg:text-8xl">
-              Bring the brief. Reach the real team.
-            </h1>
-            <p className="mt-6 max-w-lg text-base leading-7 text-[var(--showman-muted)] sm:text-lg">
-              Showman turns rough booking intent into clear terms, controlled artist access, and request flow for the people putting new scenes on.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/sign-up" className={buttonStyles("primary")}>
-                Start a request
-              </Link>
-              <Link href="/artists/new" className={buttonStyles("secondary")}>
-                Set up artist workspace
-              </Link>
-            </div>
-            <p className="mt-5 max-w-md text-sm leading-6 text-[var(--showman-muted)]">
-              Public pages create context. Availability, travel terms, fees, and team details stay behind verified access.
-            </p>
           </div>
-          <LivingBookingBrief />
-        </div>
-      </section>
-
-      <section className="landing-section landing-section--scene">
-        <div className="landing-section__inner">
-          <div className="landing-section__head">
-            <p>Scene strip</p>
-            <h2>Public energy, private booking data.</h2>
-          </div>
-          <div className="landing-scene-grid">
-            {sceneCards.map((card, index) => (
-              <article className="landing-scene-card" key={card.name}>
-                <div className={`landing-scene-card__media bg-gradient-to-br ${card.palette}`}>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                </div>
-                <div>
-                  <p>{card.role}</p>
-                  <h3>{card.name}</h3>
-                  <span>{card.caption}</span>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-section">
-        <div className="landing-section__inner landing-workflow">
-          <div className="landing-section__head">
-            <p>How it moves</p>
-            <h2>From a rough ask to a request a real team can answer.</h2>
-          </div>
-          <div className="landing-workflow__steps">
-            {workflowSteps.map((step) => (
-              <article key={step.title}>
-                <span>{step.kicker}</span>
-                <h3>{step.title}</h3>
-                <p>{step.body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-section">
-        <div className="landing-section__inner">
-          <div className="landing-doors">
-            {audienceDoors.map((door) => (
-              <Link key={door.eyebrow} href={door.href} className="landing-door">
-                <span>{door.eyebrow}</span>
-                <h2>{door.title}</h2>
-                <p>{door.body}</p>
-                <strong>{door.label}</strong>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-section landing-section--trust">
-        <div className="landing-section__inner landing-trust">
-          <div className="landing-section__head">
-            <p>Trust without sterile walls</p>
-            <h2>Raw enough for the scene. Concrete enough for the booking table.</h2>
-          </div>
-          <ul>
-            {trustPromises.map((promise) => (
-              <li key={promise}>{promise}</li>
-            ))}
-          </ul>
+          <a href="/sign-up?role=booker">Join as booker</a>
         </div>
       </section>
     </main>

@@ -1,10 +1,32 @@
 import { db } from "@/db";
 import type { ArtistProfile, AvailabilityWindow } from "@/db/schema";
+import type { PublicArtistProfile } from "./types";
 
 export async function listArtistProfiles(): Promise<ArtistProfile[]> {
   return db.query.artistProfiles.findMany({
     orderBy: (artist, { desc }) => desc(artist.createdAt),
   });
+}
+
+export async function listPublicArtistProfiles(options: { limit?: number } = {}): Promise<PublicArtistProfile[]> {
+  const artists = await db.query.artistProfiles.findMany({
+    where: (artist, { isNotNull }) => isNotNull(artist.imageUrl),
+    columns: {
+      id: true,
+      slug: true,
+      stageName: true,
+      bio: true,
+      imageUrl: true,
+      primaryGenre: true,
+      genres: true,
+      homeMarket: true,
+      createdAt: true,
+    },
+    orderBy: (artist, { desc }) => desc(artist.createdAt),
+    limit: options.limit,
+  });
+
+  return artists as PublicArtistProfile[];
 }
 
 export async function listArtistProfilesForOwner(ownerUserId: string): Promise<ArtistProfile[]> {
@@ -18,6 +40,26 @@ export async function getArtistProfileBySlug(slug: string): Promise<ArtistProfil
   return db.query.artistProfiles.findFirst({
     where: (artist, { eq }) => eq(artist.slug, slug),
   });
+}
+
+export async function getPublicArtistProfileBySlug(slug: string): Promise<PublicArtistProfile | undefined> {
+  const artist = await db.query.artistProfiles.findFirst({
+    where: (artist, { and, eq, isNotNull }) =>
+      and(eq(artist.slug, slug), isNotNull(artist.imageUrl)),
+    columns: {
+      id: true,
+      slug: true,
+      stageName: true,
+      bio: true,
+      imageUrl: true,
+      primaryGenre: true,
+      genres: true,
+      homeMarket: true,
+      createdAt: true,
+    },
+  });
+
+  return artist as PublicArtistProfile | undefined;
 }
 
 export async function getUpcomingOpenAvailabilityForArtist(

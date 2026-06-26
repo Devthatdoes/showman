@@ -20,6 +20,22 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 The app uses local system font stacks in `app/globals.css` so local and CI builds do not depend on remote font fetches.
 
+## Local Environment
+
+Copy `.env.example` to `.env` and keep `BETTER_AUTH_TRUSTED_ORIGINS` aligned with the port you are previewing. Local development allows `localhost:3000` through `localhost:3005` so the app does not reject auth requests when the preview server moves ports.
+
+Artist image uploads currently use `ARTIST_MEDIA_STORAGE=local`, which writes development files to `web/public/uploads/artists`. That is not a production storage strategy; production needs a durable object-storage adapter behind the same catalog media boundary.
+
+## Verification
+
+```bash
+npx tsc --noEmit
+npm run lint
+npm test
+```
+
+`npm test` expects a running app and a reachable `DATABASE_URL` because the gate tests exercise the real auth and artist routes. Browser-facing changes should also be checked with Playwright from the repository root when the local browser environment is available.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

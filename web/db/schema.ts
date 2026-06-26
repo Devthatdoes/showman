@@ -14,6 +14,8 @@ export const artistProfiles = pgTable("artist_profiles", {
   slug: varchar("slug", { length: 80 }).notNull().unique(),
   stageName: varchar("stage_name", { length: 120 }).notNull(),
   bio: text("bio"),
+  imageUrl: text("image_url"),
+  primaryGenre: varchar("primary_genre", { length: 80 }),
   genres: jsonb("genres").$type<string[]>().notNull().default([]),
   homeMarket: varchar("home_market", { length: 120 }),
   // User-level ownership (Better Auth user). Org/Membership ownership comes later (doc 07).

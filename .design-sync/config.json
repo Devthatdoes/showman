@@ -1,0 +1,8 @@
+{
+  "pkg": "showman-ds",
+  "globalName": "Showman",
+  "projectId": "d8139891-5176-482d-9a33-26a80270ac42",
+  "shape": "package",
+  "cssEntry": "tokens.css",
+  "readmeHeader": ".design-sync/conventions.md"
+}

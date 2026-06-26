@@ -2,14 +2,21 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { user as authUser } from "@/db/auth-schema";
 import SignOutButton from "@/components/sign-out-button";
 import { buttonStyles } from "@/components/ui/button";
 import { panelStyles } from "@/components/ui/panel";
 import { listArtistProfilesForOwner } from "@/server/catalog/queries";
+import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ artist?: string }>;
+}) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
@@ -17,6 +24,13 @@ export default async function AccountPage() {
   }
 
   const { user } = session;
+  const { artist: requestedArtist } = await searchParams;
+  const [accountUser] = await db
+    .select({ onboardingIntent: authUser.onboardingIntent })
+    .from(authUser)
+    .where(eq(authUser.id, user.id))
+    .limit(1);
+  const isBookerIntent = accountUser?.onboardingIntent === "booker";
 
   const profiles = await listArtistProfilesForOwner(user.id);
 
@@ -31,8 +45,11 @@ export default async function AccountPage() {
             Your account
           </h1>
           <p className="max-w-2xl text-sm leading-6 text-[var(--showman-muted)]">
-            Your profiles are the supply-side base of showman: real artist identity,
-            visible availability, and clean ownership for the booking rails ahead.
+            {isBookerIntent
+              ? requestedArtist
+                ? "Your account is set up for the booker lane. The next foundation step is verified requests and controlled access to the artist team you selected."
+                : "Your account is set up for the booker lane. The next foundation step is verified booker profiles, request briefs, and access to real artist teams."
+              : "Your profiles are the supply-side base of showman: real artist identity, visible availability, and clean ownership for the booking rails ahead."}
           </p>
           <div className="flex flex-col gap-2">
             <p className="font-medium text-[var(--showman-bone)]">{user.name}</p>
@@ -44,6 +61,15 @@ export default async function AccountPage() {
             <Link href="/artists" className={buttonStyles("secondary")}>
               Browse artists
             </Link>
+            {isBookerIntent ? (
+              <Link href="/artists" className={buttonStyles("primary")}>
+                Start discovery
+              </Link>
+            ) : (
+              <Link href="/artists/new" className={buttonStyles("primary")}>
+                Add artist profile
+              </Link>
+            )}
           </div>
         </div>
 

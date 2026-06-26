@@ -28,7 +28,7 @@ async function signup(email) {
 const visit = (path, cookie) =>
   fetch(`${BASE}${path}`, { headers: cookie ? { cookie } : {} });
 
-let owner, other, slug;
+let owner, other, slug, incompleteSlug;
 
 before(async () => {
   owner = await signup(`owner_${rand()}@test.local`);
@@ -36,14 +36,23 @@ before(async () => {
   assert.ok(owner.userId, "owner signup should return a user id");
   assert.ok(other.userId, "other signup should return a user id");
   slug = `ci-artist-${rand()}`;
+  incompleteSlug = `ci-incomplete-${rand()}`;
+  await pool.query(
+    "insert into artist_profiles (slug, stage_name, image_url, primary_genre, genres, owner_user_id) values ($1, $2, $3, $4, $5::jsonb, $6)",
+    [slug, "CI Test Artist", "/uploads/artists/ci-test.jpg", "Electronic", JSON.stringify(["Electronic", "techno"]), owner.userId],
+  );
   await pool.query(
     "insert into artist_profiles (slug, stage_name, genres, owner_user_id) values ($1, $2, $3::jsonb, $4)",
-    [slug, "CI Test Artist", JSON.stringify(["techno"]), owner.userId],
+    [incompleteSlug, "CI Incomplete Artist", JSON.stringify(["draft"]), owner.userId],
+  );
+  await pool.query(
+    "insert into availability_windows (artist_id, start_date, end_date, status, market, note) select id, $2, $3, 'open', $4, $5 from artist_profiles where slug = $1",
+    [slug, "2031-01-02", "2031-01-04", "Secret Test Market", "Private routing note"],
   );
 });
 
 after(async () => {
-  await pool.query("delete from artist_profiles where slug = $1", [slug]);
+  await pool.query("delete from artist_profiles where slug in ($1, $2)", [slug, incompleteSlug]);
   await pool.query("delete from \"user\" where email like '%@test.local'");
   await pool.end();
 });
@@ -62,6 +71,26 @@ test("anonymous: a profile is publicly viewable", async () => {
   const res = await visit(`/artists/${slug}`);
   assert.equal(res.status, 200);
   assert.ok(res.url.endsWith(`/artists/${slug}`), "should stay on the public profile");
+});
+
+test("anonymous: incomplete artist profiles are not public", async () => {
+  const res = await visit(`/artists/${incompleteSlug}`);
+  assert.equal(res.status, 404);
+});
+
+test("anonymous: directory hides incomplete artist profiles", async () => {
+  const res = await visit("/artists");
+  const body = await res.text();
+  assert.match(body, /CI Test Artist/);
+  assert.doesNotMatch(body, /CI Incomplete Artist/);
+});
+
+test("anonymous: public profile does not expose availability details", async () => {
+  const res = await visit(`/artists/${slug}`);
+  const body = await res.text();
+  assert.doesNotMatch(body, /Secret Test Market/);
+  assert.doesNotMatch(body, /Private routing note/);
+  assert.doesNotMatch(body, /2031/);
 });
 
 test("owner: can open the edit page", async () => {

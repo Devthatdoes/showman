@@ -2,7 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createArtistProfile } from "@/app/artists/actions";
 import { getCurrentUser } from "@/lib/session";
+import ArtistImageInput from "@/components/artist-image-input";
 import { buttonStyles } from "@/components/ui/button";
+import { PRIMARY_GENRE_OPTIONS } from "@/lib/artist-genres";
 import {
   fieldClassName,
   helpTextClassName,
@@ -30,6 +32,8 @@ export default async function NewArtistPage() {
 
         <div className={`${panelStyles("elevated")} mt-8 p-6 sm:p-8`}>
           <form action={createArtistProfile} className="flex flex-col gap-6">
+            <ArtistImageInput required />
+
             <div className="flex flex-col gap-2">
               <label htmlFor="stageName" className={labelClassName}>
                 Stage name <span className="text-[var(--showman-danger)]">*</span>
@@ -59,16 +63,36 @@ export default async function NewArtistPage() {
             </div>
 
             <div className="flex flex-col gap-2">
+              <label htmlFor="primaryGenre" className={labelClassName}>
+                Broad genre <span className="text-[var(--showman-danger)]">*</span>
+              </label>
+              <select id="primaryGenre" name="primaryGenre" required className={fieldClassName}>
+                <option value="">Choose the booking category</option>
+                {PRIMARY_GENRE_OPTIONS.map((genre) => (
+                  <option key={genre} value={genre}>
+                    {genre}
+                  </option>
+                ))}
+              </select>
+              <p className={helpTextClassName}>
+                This powers broad search and dropdowns, while specific sounds can stay more precise.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2">
               <label htmlFor="genres" className={labelClassName}>
-                Genres
+                Specific sounds
               </label>
               <input
                 id="genres"
                 name="genres"
                 type="text"
                 className={fieldClassName}
-                placeholder="house, techno, disco"
+                placeholder="Rage-Rap, Rage, Underground Rap"
               />
+              <p className={helpTextClassName}>
+                Add comma-separated scene tags, subgenres, and sounds that describe the artist.
+              </p>
             </div>
 
             <div className="flex flex-col gap-2">

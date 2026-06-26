@@ -258,6 +258,57 @@ Persistent notes for the design and build process. Each entry should capture the
 ### Remaining
 
 - Replace placeholder visual blocks with user-supplied local development images or approved real launch artists.
+
+## 2026-06-26 — Platform foundation recovery plan
+
+### Context
+
+- User called out that the app had become a whackamole loop: each fix introduced another regression, the current UI did not match `ui-testing/showman-v2`, browser QA was not being used consistently, and core foundation docs were being ignored.
+- Severe issues to recover from include invalid auth origins, migration/schema drift, public/private artist-data leakage risk, local-only media uploads, unusable blank artist profiles, weak `/artists` route architecture, and generic/vibecoded public UI.
+- The product direction remains: creative-first, verified/direct booking infrastructure, real artist media, public discovery separated from private booking data, and future API/mobile readiness through server-side module boundaries.
+
+### Decision
+
+- Stop implementation churn and create a stabilization-first plan before more code changes.
+- Treat `ui-testing/showman-v2` as the UI baseline for the next public-surface rebuild, with orange replacing the prototype red.
+- Treat media as a first-class artist-profile requirement, not a cosmetic optional field.
+- Keep landing as a front door and route full artist browsing/search to `/artists`.
+
+### Artifact
+
+- Created `docs/plans/2026-06-26-001-platform-foundation-recovery.md`.
+
+### Next Execution Shape
+
+- Execute the plan in order: migration/schema reconciliation, media/profile contract, public vs owner catalog projections, route architecture, prototype-baseline UI rebuild, creation/edit UX, auth/onboarding intent, availability/location follow-through, and Playwright/browser QA.
+- Future turns should update this build journal after work lands and should include browser evidence or a clear blocker note.
+
+## 2026-06-26 — Platform foundation recovery implementation
+
+### Implemented
+
+- Added public catalog projections so landing and `/artists` use public-ready artist rows with explicit public columns and required hero images.
+- Hid incomplete image-less artist profiles from anonymous public routes while keeping owner repair access available.
+- Gated public artist pages so availability windows and routing notes are only queried/rendered for the owner.
+- Added migration metadata for the artist media fields and a new server-owned `onboarding_intent` user field.
+- Made artist media storage fail closed in production unless durable storage is configured; local upload remains development-only.
+- Added local media cleanup for failed inserts, image replacement, and profile deletion.
+- Split sign-up into a server page plus client form so artist/booker intent is initialized without hydration/lint issues.
+- Persisted onboarding intent server-side after sign-up and made account copy read from stored user state instead of trusting query parameters.
+- Pointed Request Access at the booker lane with the selected artist preserved.
+- Replaced the Playwright scaffold with Showman route coverage and desktop/mobile screenshot capture, plus a CI workflow with Postgres and migrations.
+
+### Verification
+
+- Typecheck passed (`cd web && npx tsc --noEmit`).
+- Lint passed (`cd web && npm run lint`) with only existing `<img>` performance warnings.
+- Gate tests could not run from the sandbox because local server/DB fetches are not reachable from the tool environment.
+- Production build remains blocked by the known Turbopack sandbox limitation: it tries to create a process and bind an internal port, then fails with `Operation not permitted`; escalation was rejected by the approval layer.
+
+### Review Follow-Up
+
+- Code-review agents found and fixes were applied for production local-media risk, public projection boundary, local media lifecycle cleanup, sign-up lint/runtime risk, Playwright scaffold coverage, persisted onboarding intent, and incorrect Request Access routing.
+- Remaining residual: upload validation errors still throw through server actions instead of returning inline form state. This should be addressed with `useActionState` form handling before launch-quality profile creation.
 - Redesign public artist access so anonymous visitors cannot view sensitive profile/availability data.
 
 ### Guardrails
@@ -273,6 +324,75 @@ Persistent notes for the design and build process. Each entry should capture the
 - The new artist form did not reliably redirect in one headless browser attempt; investigate during the profile customization pass.
 - Design a real structured location model before relying on location search/matching in production.
 - Full landing page and public artist directory still need the Living Raw Gallery redesign pass.
+
+## 2026-06-26 — Testing UI baseline reset
+
+### Decision
+
+- User rejected the previous landing page as generic/slop and asked to start from the `ui-testing/showman-v2` baseline instead.
+- Reset the homepage direction to the testing UI's base structure: fluid cursor background, grain, centered raw hero, search utility, image-led artist cards, booker marquee, and two-audience close.
+- Changed the accent from red to orange.
+
+### Guardrails
+
+- This is a quick baseline adaptation for visual review, not a full product architecture pass.
+- Keep private booking details off public surfaces.
+- Do not continue polishing the rejected landing direction.
+
+## 2026-06-26 — Testing UI literalization pass
+
+### Decision
+
+- User clarified the goal is not another redesign: make the homepage almost exactly like `ui-testing/showman-v2`, with orange replacing red, so platform work can move forward.
+- Removed the extra landing close section and kept the page to the testing UI's core surfaces: hero/search, artist cards, and booker marquee.
+- Removed the hero kicker, restored testing-style artist/booker labels, aligned the nav sign-in pill to the reference, and changed reveal behavior to intersection-based visibility instead of one-shot load animation.
+
+### Guardrails
+
+- Keep this as a simple baseline, not the final visual identity.
+- Do not spend another long cycle polishing the homepage before moving into the actual platform pages.
+- Preserve privacy: public sample artist cards are previews only and should not expose booking details, availability, fees, contacts, or location constraints.
+
+## 2026-06-26 — Artist media and live homepage data foundation
+
+### User Feedback
+
+- Artist media is not optional polish; the product is creative-first and artist profiles must be created with an image that can display across the app.
+- Homepage artist cards should not be hardcoded showcases. They need to flow from real artist profiles already on the platform.
+- Genre logic needs both a broad booking category and specific scene/sound tags so search, dropdowns, and filtering can work without flattening artist identity.
+- Fake booker profile cards create product confusion until booker onboarding and verification exist.
+
+### Implemented
+
+- Added artist profile schema and migration fields for uploaded image URL and broad primary genre.
+- Added a server-side artist image upload flow that validates image type/size and stores files under `web/public/uploads/artists`.
+- Updated artist create/edit forms to include required artist image, broad genre select, and specific sounds input.
+- Updated public artist directory and profile pages to render the saved artist image.
+- Replaced hardcoded homepage artist data with real artist profile data and an in-page artist preview/filter experience.
+- Replaced fake booker cards with an honest booker onboarding lane placeholder until a real booker model exists.
+
+### Guardrails
+
+- Uploaded media is ignored by git and is suitable for local/dev storage only; production needs a durable object storage plan.
+- The migration file was created but could not be applied in this session because the environment rejected the database migration command escalation.
+- Homepage previews must remain booking-safe: no public fees, contact details, availability windows, or private terms.
+- Existing profiles without images are legacy-incomplete and should be updated through edit profile.
+
+### Runtime Repair
+
+- The homepage initially crashed because the app schema selected `image_url` and `primary_genre` before the local database had those columns.
+- Direct migration from the tool sandbox was blocked first by `tsx` IPC restrictions and then by denied access to local Postgres.
+- Added an idempotent artist-profile schema guard that runs before artist profile reads/writes and applies the same additive columns with `ADD COLUMN IF NOT EXISTS`.
+- Dev server logs returned to `/` 200 responses after hot reload.
+
+### Code Review Containment
+
+- Code review found the runtime schema guard was unsafe because it could create columns before the official migration ran, causing duplicate-column migration failure later.
+- Removed runtime DDL and made `0004_artist_profile_media.sql` idempotent with `ADD COLUMN IF NOT EXISTS`.
+- Restored the header `Artists` link to the real `/artists` directory instead of anchoring to the landing page section.
+- Added local trusted origins through port `3005`, including the active `3004` dev server, to fix local Better Auth invalid-origin failures.
+- Gated artist availability display to owners only on public profile pages.
+- Reordered artist profile validation so required text/category fields are checked before image files are written.
 
 ## 2026-06-25 — PPTX wireframe read
 
