@@ -245,6 +245,8 @@ Persistent notes for the design and build process. Each entry should capture the
 - Replaced the generic split hero with a living booking brief and privacy-safe CTAs.
 - Added scroll depth with scene teasers, product workflow, two audience doors, and trust promises.
 - Kept development artist references as placeholder-only copy/visual blocks instead of remote likeness assets.
+- Review follow-up removed specific sample booking terms and real artist-name placeholders from rendered public landing content.
+- Screenshot follow-up tightened the living brief text sizing and scene-card heading scale so desktop and mobile renders breathe better.
 
 ### Verification
 
