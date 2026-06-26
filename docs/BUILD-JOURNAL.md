@@ -234,6 +234,10 @@ Persistent notes for the design and build process. Each entry should capture the
 - Visual direction: sharper orange signal over obsidian/bone surfaces, fewer decorative boxes, more editorial scale and motion.
 - Created `docs/superpowers/plans/2026-06-26-landing-brief-reset.md` as the execution plan for the next build slice.
 
+### Build Update
+
+- Added the living booking brief hero component: editable prompt text, pointer-driven orange light, resolving chips, scoped landing CSS, reduced-motion behavior, and typecheck verification (`cd web && npx tsc --noEmit` passed).
+
 ### Guardrails
 
 - Public landing content must not expose real artist booking details.
