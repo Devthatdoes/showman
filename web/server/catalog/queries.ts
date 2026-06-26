@@ -10,7 +10,8 @@ export async function listArtistProfiles(): Promise<ArtistProfile[]> {
 
 export async function listPublicArtistProfiles(options: { limit?: number } = {}): Promise<PublicArtistProfile[]> {
   const artists = await db.query.artistProfiles.findMany({
-    where: (artist, { isNotNull }) => isNotNull(artist.imageUrl),
+    where: (artist, { and, isNotNull }) =>
+      and(isNotNull(artist.imageUrl), isNotNull(artist.primaryGenre)),
     columns: {
       id: true,
       slug: true,
@@ -45,7 +46,7 @@ export async function getArtistProfileBySlug(slug: string): Promise<ArtistProfil
 export async function getPublicArtistProfileBySlug(slug: string): Promise<PublicArtistProfile | undefined> {
   const artist = await db.query.artistProfiles.findFirst({
     where: (artist, { and, eq, isNotNull }) =>
-      and(eq(artist.slug, slug), isNotNull(artist.imageUrl)),
+      and(eq(artist.slug, slug), isNotNull(artist.imageUrl), isNotNull(artist.primaryGenre)),
     columns: {
       id: true,
       slug: true,

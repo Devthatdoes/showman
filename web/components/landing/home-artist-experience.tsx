@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type HomeArtist = {
   slug: string;
@@ -20,6 +20,22 @@ function getSpecificGenres(artist: HomeArtist): string[] {
 export default function HomeArtistExperience({ artists }: { artists: HomeArtist[] }) {
   const [activeGenre, setActiveGenre] = useState("All");
   const [selectedArtist, setSelectedArtist] = useState<HomeArtist | null>(null);
+
+  useEffect(() => {
+    if (!selectedArtist) return;
+
+    document.body.classList.add("raw-modal-open");
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setSelectedArtist(null);
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.classList.remove("raw-modal-open");
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [selectedArtist]);
 
   const visualArtists = useMemo(
     () => artists.filter((artist) => Boolean(artist.imageUrl)),
@@ -128,7 +144,7 @@ export default function HomeArtistExperience({ artists }: { artists: HomeArtist[
                   "Public profile preview. Booking details stay private until access is verified."}
               </p>
               <div className="raw-artist-preview__actions">
-                <Link href={`/sign-up?role=booker&artist=${selectedArtist.slug}`}>Request access</Link>
+                <Link href={`/booker/requests/new?artist=${selectedArtist.slug}`}>Request access</Link>
                 <Link href={`/artists/${selectedArtist.slug}`}>View public profile</Link>
               </div>
             </div>

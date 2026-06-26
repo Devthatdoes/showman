@@ -33,8 +33,9 @@ export default function SignUpForm({ initialIntent, requestedArtist }: SignUpFor
       setPending(false);
     } else {
       await saveOnboardingIntent(intent);
-      const suffix = requestedArtist ? `?artist=${encodeURIComponent(requestedArtist)}` : "";
-      router.push(`/account${suffix}`);
+      const params = new URLSearchParams({ role: intent });
+      if (requestedArtist) params.set("artist", requestedArtist);
+      router.push(`/onboarding?${params.toString()}`);
       router.refresh();
     }
   }

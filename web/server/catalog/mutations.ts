@@ -1,6 +1,8 @@
 import { db } from "@/db";
 import { artistProfiles, availabilityWindows, type ArtistProfile } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
+import { canManageArtist } from "@/server/identity/authorize";
+import { ensurePersonalOrgForUser } from "@/server/identity/mutations";
 import { getArtistProfileBySlug } from "./queries";
 import { parseArtistProfileFormData, parseArtistProfileTextFields, slugifyArtistName } from "./types";
 import { deleteArtistImageUpload, saveArtistImageUpload } from "./uploads";
@@ -8,7 +10,7 @@ import { deleteArtistImageUpload, saveArtistImageUpload } from "./uploads";
 export async function requireOwnedArtist(ownerUserId: string, slug: string): Promise<ArtistProfile> {
   const artist = await getArtistProfileBySlug(slug);
   if (!artist) throw new Error("Artist not found");
-  if (artist.ownerUserId !== ownerUserId) throw new Error("Not authorized");
+  if (!(await canManageArtist(ownerUserId, artist))) throw new Error("Not authorized");
   return artist;
 }
 
@@ -30,6 +32,7 @@ export async function createArtistProfileForUser(
   let slug = base;
   const existing = await getArtistProfileBySlug(slug);
   if (existing) slug = `${base}-${Date.now().toString(36).slice(-4)}`;
+  const org = await ensurePersonalOrgForUser(ownerUserId, stageName);
 
   try {
     await db.insert(artistProfiles).values({
@@ -40,6 +43,7 @@ export async function createArtistProfileForUser(
       primaryGenre,
       homeMarket,
       genres,
+      orgId: org.id,
       ownerUserId,
     });
   } catch (error) {

@@ -2,13 +2,9 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
-import { user as authUser } from "@/db/auth-schema";
 import SignOutButton from "@/components/sign-out-button";
 import { buttonStyles } from "@/components/ui/button";
 import { panelStyles } from "@/components/ui/panel";
-import { listArtistProfilesForOwner } from "@/server/catalog/queries";
-import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -25,14 +21,6 @@ export default async function AccountPage({
 
   const { user } = session;
   const { artist: requestedArtist } = await searchParams;
-  const [accountUser] = await db
-    .select({ onboardingIntent: authUser.onboardingIntent })
-    .from(authUser)
-    .where(eq(authUser.id, user.id))
-    .limit(1);
-  const isBookerIntent = accountUser?.onboardingIntent === "booker";
-
-  const profiles = await listArtistProfilesForOwner(user.id);
 
   return (
     <div className="min-h-screen">
@@ -45,11 +33,9 @@ export default async function AccountPage({
             Your account
           </h1>
           <p className="max-w-2xl text-sm leading-6 text-[var(--showman-muted)]">
-            {isBookerIntent
-              ? requestedArtist
-                ? "Your account is set up for the booker lane. The next foundation step is verified requests and controlled access to the artist team you selected."
-                : "Your account is set up for the booker lane. The next foundation step is verified booker profiles, request briefs, and access to real artist teams."
-              : "Your profiles are the supply-side base of showman: real artist identity, visible availability, and clean ownership for the booking rails ahead."}
+            {requestedArtist
+              ? "You are signed in. Finish onboarding to turn the selected artist into a structured booking request."
+              : "You are signed in. Choose the working surface that matches what you need to do next."}
           </p>
           <div className="flex flex-col gap-2">
             <p className="font-medium text-[var(--showman-bone)]">{user.name}</p>
@@ -61,61 +47,41 @@ export default async function AccountPage({
             <Link href="/artists" className={buttonStyles("secondary")}>
               Browse artists
             </Link>
-            {isBookerIntent ? (
-              <Link href="/artists" className={buttonStyles("primary")}>
-                Start discovery
-              </Link>
-            ) : (
-              <Link href="/artists/new" className={buttonStyles("primary")}>
-                Add artist profile
-              </Link>
-            )}
+            <Link href="/onboarding" className={buttonStyles("secondary")}>
+              Onboarding
+            </Link>
+            <Link href="/team" className={buttonStyles("primary")}>
+              Team dashboard
+            </Link>
+            <Link href="/booker" className={buttonStyles("secondary")}>
+              Booker dashboard
+            </Link>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex items-end justify-between gap-4">
-            <h2 className="text-xl font-bold tracking-[-0.03em] text-[var(--showman-bone)]">
-              Your profiles
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Link href="/team" className={`${panelStyles("subtle")} block p-5 transition hover:border-[#ff8a2a]`}>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ffb06a]">
+              Artist / team
+            </p>
+            <h2 className="mt-3 text-xl font-black uppercase tracking-[-0.04em] text-[var(--showman-bone)]">
+              Manage profiles
             </h2>
-            <Link href="/artists/new" className={buttonStyles("primary")}>
-              Add profile
-            </Link>
-          </div>
-
-          {profiles.length === 0 ? (
-            <div className={`${panelStyles("subtle")} flex flex-col items-center gap-4 p-8 text-center`}>
-              <p className="text-sm leading-6 text-[var(--showman-muted)]">
-                You have not created any profiles yet.
-              </p>
-              <Link href="/artists/new" className={buttonStyles("primary")}>
-                Add profile
-              </Link>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {profiles.map((p) => (
-                <div
-                  key={p.slug}
-                  className={`${panelStyles("subtle")} flex items-center justify-between gap-4 p-4 sm:p-5`}
-                >
-                  <Link href={`/artists/${p.slug}`} className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-[var(--showman-bone)]">
-                      {p.stageName}
-                    </span>
-                    {p.homeMarket && (
-                      <span className="block truncate text-xs text-[var(--showman-muted)]">
-                        {p.homeMarket}
-                      </span>
-                    )}
-                  </Link>
-                  <Link href={`/artists/${p.slug}/edit`} className={buttonStyles("secondary")}>
-                    Edit
-                  </Link>
-                </div>
-              ))}
-            </div>
-          )}
+            <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">
+              Profiles, readiness, inbound requests, and calendar attention belong in the team dashboard.
+            </p>
+          </Link>
+          <Link href="/booker" className={`${panelStyles("subtle")} block p-5 transition hover:border-[#ff8a2a]`}>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ffb06a]">
+              Booker
+            </p>
+            <h2 className="mt-3 text-xl font-black uppercase tracking-[-0.04em] text-[var(--showman-bone)]">
+              Build requests
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">
+              Events, requested artists, and coordination context belong in the booker dashboard.
+            </p>
+          </Link>
         </div>
       </div>
     </div>

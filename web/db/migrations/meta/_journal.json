@@ -43,6 +43,13 @@
       "when": 1782443900000,
       "tag": "0005_user_onboarding_intent",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782501952126,
+      "tag": "0006_green_spyke",
+      "breakpoints": true
     }
   ]
 }

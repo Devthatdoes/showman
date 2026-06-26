@@ -26,6 +26,24 @@ Copy `.env.example` to `.env` and keep `BETTER_AUTH_TRUSTED_ORIGINS` aligned wit
 
 Artist image uploads currently use `ARTIST_MEDIA_STORAGE=local`, which writes development files to `web/public/uploads/artists`. That is not a production storage strategy; production needs a durable object-storage adapter behind the same catalog media boundary.
 
+## Database and Workflow Foundation
+
+Run migrations against Postgres before loading the app:
+
+```bash
+npm run migrate
+```
+
+The current schema includes Better Auth tables, `artist_profiles`, manual `availability_windows`, and the first workflow foundation tables:
+
+- `orgs` and `memberships` for the actor/principal model.
+- `booker_profiles` for the demand-side dossier.
+- `booker_events` for booker coordination around a specific show or event.
+- `booking_requests` for structured request/pitch records.
+- `events` for append-only audit records.
+
+This is still pre-transaction infrastructure. There is no live escrow, e-sign, offer/counter-offer chain, hold promotion, confirmation artifact, payment capture, payout, dispute flow, or production verification rail yet. Those later systems should attach to the workflow spine rather than bypass it.
+
 ## Verification
 
 ```bash

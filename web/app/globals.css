@@ -335,6 +335,10 @@ body {
   opacity: 1;
 }
 
+body.raw-modal-open {
+  overflow: hidden;
+}
+
 .raw-empty {
   border-top: 1px solid var(--showman-line);
   padding-top: 1.5rem;
@@ -387,15 +391,18 @@ body {
 .raw-modal {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 1000;
   display: grid;
   place-items: center;
   padding: 1.25rem;
+  isolation: isolate;
+  overscroll-behavior: contain;
 }
 
 .raw-modal__scrim {
   position: absolute;
   inset: 0;
+  z-index: 0;
   border: 0;
   background: rgba(0, 0, 0, 0.72);
   cursor: pointer;

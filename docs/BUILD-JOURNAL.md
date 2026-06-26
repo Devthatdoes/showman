@@ -440,3 +440,63 @@ Persistent notes for the design and build process. Each entry should capture the
 - Next pass should focus on `/` plus landing-specific components/data only.
 - Do not add production celebrity likenesses, database tables, paid assets, or public booking APIs in this pass.
 - Public/private artist access remains a follow-up, but the landing reset must not introduce new detail leaks.
+
+## 2026-06-26 — Onboarding and booking workflow foundation
+
+### Context
+
+- User asked to step back from UI polish and start building the next functional foundation: real onboarding, booker value, artist/team coordination, database clarity, and production-readiness understanding.
+- Created plan: `docs/plans/2026-06-26-002-feat-onboarding-booking-workflow-plan.md`.
+- The app remains a modular monolith and is still pre-escrow/pre-contract; this pass should create the workflow spine, not pretend the full booking transaction exists.
+
+### Implemented
+
+- Added workflow schema for `orgs`, `memberships`, `booker_profiles`, `booker_events`, `booking_requests`, and append-only `events`.
+- Added phase-0 identity services for personal org creation, owner membership, booker profile creation, actor workspace reads, and artist-management authorization.
+- Added booking services for booker dashboards, event briefs, request creation, and artist-team inbound queues.
+- Added `/onboarding`, `/booker`, `/booker/events/new`, `/booker/requests/new`, and `/team` routes.
+- Wired request-access CTAs from landing/public artist profile into the real request form.
+- Fixed the homepage artist preview modal so background page content cannot scroll over the preview.
+- Updated `web/README.md` with local database/workflow setup and production-readiness boundaries.
+
+### Guardrails
+
+- `BookingRequest` is only a structured request/pitch record in this pass. Offers, holds, agreements, escrow, e-sign, confirmations, payments, payouts, disputes, and integrations remain deferred.
+- `Org`/`Membership` exists now, but only owner/agent-style phase-0 authorization is active. Full RBAC matrix enforcement still needs a dedicated pass.
+- Booker profiles are dossiers for workflow and trust-sizing, not verified/KYB-backed claims yet.
+- Dashboard data is live database-backed; empty states are acceptable, hardcoded showcase rows are not.
+
+### Verification Notes
+
+- Typecheck passed after the first implementation pass.
+- Gate tests were extended for team inbound request visibility and booker dashboard visibility.
+- Playwright coverage was extended for the landing modal layering behavior when public artist cards exist in the local database.
+
+## 2026-06-26 — Sign-in failure debug
+
+### Problem
+
+- User reported the sign-in flow now keeps showing a failure state.
+- Two failure paths were identified: Better Auth rejects untrusted local dev origins before checking credentials, and `/account` had become coupled to the new workflow tables after login.
+
+### Fix
+
+- Updated Better Auth local development origins to trust `localhost` and `127.0.0.1` wildcard ports only outside production.
+- Cleared the local `.env` trusted-origin override so it does not narrow the trusted origins back to a stale short port list.
+- Reduced `/account` to an auth-session-only landing hub so a successful sign-in does not immediately depend on the new workflow migration.
+
+### Notes
+
+- The new `/team`, `/booker`, and onboarding workflow still require migration `0006_green_spyke.sql`.
+- `npm run migrate` is blocked inside the Codex sandbox by `tsx` IPC permissions, and the elevated attempt was rejected by the harness.
+- Verification run: Better Auth origin matcher accepts `http://localhost:*` and `http://127.0.0.1:*`; `npx tsc --noEmit` passes; `npm run lint` passes with the existing `<img>` warnings.
+
+### Follow-Up Verification
+
+- User confirmed the visible sign-in error still appeared after the code-side origin fix.
+- Local API probing showed `/api/auth/sign-in/email` and `/api/auth/sign-up/email` were returning `500`, while `/sign-in` rendered and `/api/auth/get-session` returned `200 null`.
+- Root cause was confirmed as local database schema drift: the app code expected `user.onboarding_intent` plus the new workflow tables, but the local database had not applied the latest migrations.
+- Ran `npm run migrate` successfully after terminal access approval.
+- Verified the local database now has `user.onboarding_intent`, `artist_profiles.org_id`, `orgs`, `memberships`, `booker_profiles`, and `booking_requests`.
+- Verified real Better Auth sign-up and sign-in requests against `http://localhost:3004` now return `200 OK` with session tokens.
+- Removed the temporary `debug-auth-probe*@test.local` verification account from the local database.

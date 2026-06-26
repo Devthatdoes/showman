@@ -8,6 +8,7 @@ import {
   getPublicArtistProfileBySlug,
   getUpcomingOpenAvailabilityForArtist,
 } from "@/server/catalog/queries";
+import { canManageArtist } from "@/server/identity/authorize";
 import { badgeStyles } from "@/components/ui/badge";
 import { buttonStyles } from "@/components/ui/button";
 import { panelStyles } from "@/components/ui/panel";
@@ -30,7 +31,7 @@ export default async function ArtistProfilePage({
   const user = await getCurrentUser();
 
   const ownedCandidate = user ? await getArtistProfileBySlug(slug) : undefined;
-  const isOwner = !!user && ownedCandidate?.ownerUserId === user.id;
+  const isOwner = !!user && !!ownedCandidate && (await canManageArtist(user.id, ownedCandidate));
   const artist = isOwner ? ownedCandidate : await getPublicArtistProfileBySlug(slug);
 
   if (!artist) {
@@ -109,6 +110,20 @@ export default async function ArtistProfilePage({
                     className={buttonStyles("primary")}
                   >
                     Manage availability
+                  </Link>
+                </div>
+              )}
+
+              {!isOwner && (
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={`/booker/requests/new?artist=${artist.slug}`}
+                    className={buttonStyles("primary")}
+                  >
+                    Request access
+                  </Link>
+                  <Link href="/artists" className={buttonStyles("secondary")}>
+                    Keep browsing
                   </Link>
                 </div>
               )}

@@ -4,14 +4,13 @@ import { nextCookies } from "better-auth/next-js";
 import { db } from "@/db";
 import * as authSchema from "@/db/auth-schema";
 
-const localPreviewOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://localhost:3002",
-  "http://localhost:3003",
-  "http://localhost:3004",
-  "http://localhost:3005",
-];
+const localPreviewOrigins =
+  process.env.NODE_ENV === "production"
+    ? []
+    : [
+        "http://localhost:*",
+        "http://127.0.0.1:*",
+      ];
 
 const configuredTrustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS
   ?.split(",")
