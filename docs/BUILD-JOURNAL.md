@@ -238,6 +238,26 @@ Persistent notes for the design and build process. Each entry should capture the
 
 - Added the living booking brief hero component: editable prompt text, pointer-driven orange light, resolving chips, scoped landing CSS, reduced-motion behavior, and typecheck verification (`cd web && npx tsc --noEmit` passed).
 
+## 2026-06-26 — Landing brief reset implementation
+
+### Implemented
+
+- Replaced the generic split hero with a living booking brief and privacy-safe CTAs.
+- Added scroll depth with scene teasers, product workflow, two audience doors, and trust promises.
+- Kept development artist references as placeholder-only copy/visual blocks instead of remote likeness assets.
+
+### Verification
+
+- Typecheck: passed (`cd web && npx tsc --noEmit`).
+- Lint: passed (`cd web && npm run lint`).
+- Production build: sandbox/environment blocked (`cd web && npm run build` failed because Turbopack attempted to create a local process and bind an internal port: `Operation not permitted (os error 1)`; escalated rerun was rejected by the approval layer).
+- Playwright desktop/mobile screenshots: not run per controller instruction not to start long-lived dev servers; rendered Playwright QA remains with the controller after commit.
+
+### Remaining
+
+- Replace placeholder visual blocks with user-supplied local development images or approved real launch artists.
+- Redesign public artist access so anonymous visitors cannot view sensitive profile/availability data.
+
 ### Guardrails
 
 - Public landing content must not expose real artist booking details.
