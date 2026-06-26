@@ -176,6 +176,14 @@ input[type="date"]:focus::-webkit-calendar-picker-indicator {
   .landing-brief__chip {
     animation: none;
   }
+
+  .landing-door {
+    transition: none;
+  }
+
+  .landing-door:hover {
+    transform: none;
+  }
 }
 
 .landing-section {
