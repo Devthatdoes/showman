@@ -175,7 +175,7 @@ Persistent notes for the design and build process. Each entry should capture the
 - Landing page needs actual scroll depth, scene energy, examples, movement, and a less suffocated feel.
 - Public artist surfaces should not expose real artist profile details, availability, booking details, or location/market data to anonymous visitors.
 - The `~/incubator/ui-testing` prototype at `http://localhost:8000/` remains an important vibe reference: fluid cursor/background energy, grain, reveal motion, breathing room, and a search-as-entry utility.
-- Temporary development artist examples may use ASAP Rocky, Fakemink, and PinkPantheress imagery in that order, but this must be clearly treated as development-only placeholder content and never production launch material.
+- Temporary development visual examples must use generic labels and must never render real artist names, booking details, or celebrity-likeness references in production launch material.
 
 ### Debugging
 
@@ -263,6 +263,7 @@ Persistent notes for the design and build process. Each entry should capture the
 - Public landing content must not expose real artist booking details.
 - Development artist examples are placeholder-only and must be replaced before production launch.
 - Build verification must include typecheck, lint, production build, and Playwright desktop/mobile screenshot QA.
+- Landing samples and parser chips must stay non-specific: no public city, exact date, fee, travel requirement, booking term, real artist name, or celebrity-likeness reference should render in placeholder content.
 
 ### Follow-Ups
 

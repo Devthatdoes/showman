@@ -4,12 +4,12 @@ import { type CSSProperties, useMemo, useState } from "react";
 import { landingBrief } from "@/lib/landing-content";
 
 const parsedTerms = [
-  { pattern: /berlin/i, label: "Berlin", tone: "signal" },
-  { pattern: /mid-?oct/i, label: "mid-Oct", tone: "plain" },
-  { pattern: /90/i, label: "90 min", tone: "plain" },
-  { pattern: /(eur|€)\s?8k|8k/i, label: "EUR8k", tone: "signal" },
-  { pattern: /travel/i, label: "travel covered", tone: "plain" },
-  { pattern: /dj|artist|act/i, label: "verified artist teams", tone: "signal" },
+  { pattern: /energy|scene|room|act/i, label: "scene fit", tone: "signal" },
+  { pattern: /fall|season|window|soon/i, label: "fall window", tone: "plain" },
+  { pattern: /set|performance|show/i, label: "set length", tone: "plain" },
+  { pattern: /budget|approved|funded/i, label: "budget approved", tone: "signal" },
+  { pattern: /private|gated|controlled/i, label: "access gated", tone: "plain" },
+  { pattern: /team|verified|authority/i, label: "verified teams", tone: "signal" },
 ] as const;
 
 export default function LivingBookingBrief() {

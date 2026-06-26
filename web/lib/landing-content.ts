@@ -26,14 +26,15 @@ export type AudienceDoor = {
 };
 
 export const landingBrief = {
-  prompt: "Need a DJ for a warehouse show in Berlin, mid-Oct, around EUR8k.",
+  prompt:
+    "Need a high-energy act for a late-night room this fall. Budget approved.",
   chips: [
-    { label: "Berlin", tone: "signal" },
-    { label: "mid-Oct", tone: "plain" },
-    { label: "90 min", tone: "plain" },
-    { label: "EUR8k", tone: "signal" },
-    { label: "travel covered", tone: "plain" },
-    { label: "verified artist teams", tone: "signal" },
+    { label: "scene fit", tone: "signal" },
+    { label: "fall window", tone: "plain" },
+    { label: "set length", tone: "plain" },
+    { label: "budget approved", tone: "signal" },
+    { label: "access gated", tone: "plain" },
+    { label: "verified teams", tone: "signal" },
   ] satisfies BriefChip[],
   fragments: [
     "brief parsed",
@@ -45,21 +46,21 @@ export const landingBrief = {
 
 export const sceneCards = [
   {
-    name: "ASAP Rocky",
+    name: "Development visual 01",
     role: "development visual placeholder",
     caption: "A high-energy public teaser without booking details.",
     palette: "from-[#070707] via-[#18324a] to-[#ff6a00]",
     devOnly: true,
   },
   {
-    name: "Fakemink",
+    name: "Development visual 02",
     role: "development visual placeholder",
     caption: "Raw scene texture, not production marketplace proof.",
     palette: "from-[#151515] via-[#5e5b65] to-[#ff2d1d]",
     devOnly: true,
   },
   {
-    name: "PinkPantheress",
+    name: "Development visual 03",
     role: "development visual placeholder",
     caption: "Soft motion and pop-world signal, still privacy-safe.",
     palette: "from-[#041418] via-[#0b6472] to-[#ffb06a]",
