@@ -126,3 +126,30 @@ Persistent notes for the design and build process. Each entry should capture the
   - Page-level polish on current Phase 0 surfaces.
   - Verification, screenshots/browser review, and documentation update.
 - Favor subagent-driven execution after the plan is approved, with disjoint file ownership per task.
+
+## 2026-06-25 — Visual foundation implementation
+
+### Shipped
+
+- Added internal catalog server boundary for profile and availability reads/writes.
+- Added reusable UI primitives for buttons, panels, fields, and badges.
+- Restyled current Phase 0 public, auth, owner, and availability surfaces around the carbon/bone/orange Raw Gallery direction.
+- Removed the remote Google font build dependency by switching to local system font tokens.
+- Set the Turbopack root explicitly in `web/next.config.ts`.
+
+### Verification
+
+- Typecheck: passed (`cd web && npx tsc --noEmit`).
+- Lint: passed (`cd web && npm run lint`).
+- Migration: passed (`cd web && DATABASE_URL=postgresql://showman:showman@localhost:5432/showman npx tsx db/migrate.ts`).
+- Build: passed (`cd web && npm run build`, with sandbox escalation required because Turbopack binds a local internal port).
+- Gate tests: passed (`8/8` via `start-server-and-test` on port `3001` with explicit `DATABASE_URL`, `BASE_URL`, and `BETTER_AUTH_URL`).
+- HTTP smoke: passed for `/`, `/artists`, `/artists/limmi-sendrixx`, `/sign-in`, and `/sign-up`.
+- Browser/visual screenshots: not run. Browser plugin is unavailable in this session and Playwright is not installed locally; no dependency was added for this pass.
+
+### Follow-Ups
+
+- Run a real browser screenshot QA pass once Browser plugin or Playwright is available.
+- Tune exact orange shade, density, and mobile spacing after screenshot review.
+- Public JSON read endpoints for artist discovery/profile after visual foundation stabilizes.
+- Org/RBAC planning remains the next major domain increment.
