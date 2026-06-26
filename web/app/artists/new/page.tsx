@@ -2,6 +2,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createArtistProfile } from "@/app/artists/actions";
 import { getCurrentUser } from "@/lib/session";
+import { buttonStyles } from "@/components/ui/button";
+import {
+  fieldClassName,
+  helpTextClassName,
+  labelClassName,
+} from "@/components/ui/form";
+import { panelStyles } from "@/components/ui/panel";
 
 export const dynamic = "force-dynamic";
 
@@ -9,79 +16,80 @@ export default async function NewArtistPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/sign-in");
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="mx-auto max-w-2xl px-6 py-16">
-        <h1 className="text-3xl font-semibold tracking-tight">New artist profile</h1>
-        <p className="mt-2 text-zinc-400">
-          Create your electronic press kit. No booking or fees — just your story, your sound.
+    <main className="min-h-screen">
+      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#ffb06a]">
+          Artist profile
+        </p>
+        <h1 className="mt-2 text-3xl font-black uppercase tracking-[-0.05em] text-[var(--showman-bone)] sm:text-4xl">
+          New profile
+        </h1>
+        <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--showman-muted)]">
+          Create the profile that helps real bookers understand your sound, market, and next open dates.
         </p>
 
-        <div className="mt-10 rounded-xl border border-zinc-800 bg-zinc-900/60 p-6">
+        <div className={`${panelStyles("elevated")} mt-8 p-6 sm:p-8`}>
           <form action={createArtistProfile} className="flex flex-col gap-6">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="stageName" className="text-sm font-medium text-zinc-300">
-                Stage name <span className="text-zinc-500">*</span>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="stageName" className={labelClassName}>
+                Stage name <span className="text-[var(--showman-danger)]">*</span>
               </label>
               <input
                 id="stageName"
                 name="stageName"
                 type="text"
                 required
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
+                className={fieldClassName}
                 placeholder="Your artist name"
               />
+              <p className={helpTextClassName}>Use the name people already book and search for.</p>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="homeMarket" className="text-sm font-medium text-zinc-300">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="homeMarket" className={labelClassName}>
                 Home market
               </label>
               <input
                 id="homeMarket"
                 name="homeMarket"
                 type="text"
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
+                className={fieldClassName}
                 placeholder="e.g. Berlin, London, New York"
               />
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="genres" className="text-sm font-medium text-zinc-300">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="genres" className={labelClassName}>
                 Genres
               </label>
               <input
                 id="genres"
                 name="genres"
                 type="text"
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
+                className={fieldClassName}
                 placeholder="house, techno, disco"
               />
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="bio" className="text-sm font-medium text-zinc-300">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="bio" className={labelClassName}>
                 Bio
               </label>
               <textarea
                 id="bio"
                 name="bio"
                 rows={5}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
+                className={fieldClassName}
                 placeholder="Tell us about your sound, your influences, your journey."
               />
+              <p className={helpTextClassName}>Keep it practical. Bookers want context they can trust.</p>
             </div>
 
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                type="submit"
-                className="inline-flex items-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-emerald-400"
-              >
+            <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+              <button type="submit" className={buttonStyles("primary")}>
                 Create profile
               </button>
-              <Link
-                href="/artists"
-                className="inline-flex items-center rounded-lg border border-zinc-700 bg-transparent px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-800"
-              >
+              <Link href="/artists" className={buttonStyles("secondary")}>
                 Back to artists
               </Link>
             </div>
