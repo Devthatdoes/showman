@@ -110,3 +110,19 @@ Persistent notes for the design and build process. Each entry should capture the
 - Orange is the primary action/accent candidate.
 - The UI should be image-ready but not dependent on real artist imagery for this first production pass.
 - Empty or sparse states should feel intentional rather than unfinished.
+
+## 2026-06-25 — Spec approved and implementation planning
+
+### Status
+
+- User approved `docs/superpowers/specs/2026-06-25-visual-foundation-api-prep-design.md`.
+- Implementation planning began using the `superpowers:writing-plans` workflow.
+
+### Planning Shape
+
+- Split implementation into tasks that can be reviewed independently:
+  - Internal catalog server boundary.
+  - Shared visual tokens and UI components.
+  - Page-level polish on current Phase 0 surfaces.
+  - Verification, screenshots/browser review, and documentation update.
+- Favor subagent-driven execution after the plan is approved, with disjoint file ownership per task.
