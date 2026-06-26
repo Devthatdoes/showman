@@ -1,5 +1,6 @@
 # Local Claude Code tooling / local settings
 /.claude/
+/.superpowers/
 
 # Safety nets (web/ has its own .gitignore for the app itself)
 **/node_modules/
