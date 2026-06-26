@@ -225,3 +225,50 @@ Persistent notes for the design and build process. Each entry should capture the
 - The new artist form did not reliably redirect in one headless browser attempt; investigate during the profile customization pass.
 - Design a real structured location model before relying on location search/matching in production.
 - Full landing page and public artist directory still need the Living Raw Gallery redesign pass.
+
+## 2026-06-25 — PPTX wireframe read
+
+### Artifact
+
+- Reviewed `Showman_Wireframes.pptx`, a one-slide IA/flow wireframe map.
+- The deck compares five possible product spines and three landing entry treatments.
+
+### Wireframe Directions
+
+- **A · The Deal Pipeline**: shared booking pipeline for managers, bookers, and artists. Best when the core value is replacing messy email threads with a clean source of truth.
+- **B · Swipe the Scene**: discovery-first artist feed with quick-book sheet. Best when taste, momentum, and culture-native browsing are the primary magic.
+- **C · Book the Window**: calendar-first availability and request flow. Best when the pain is scheduling chaos across artists, travel, holds, and open windows.
+- **D · Roster HQ**: manager/org workspace where independent artists are an org of one. Best as a durable operating model for artists, managers, teams, and future RBAC.
+- **E · Describe the Gig**: plain-language booking brief parsed into structured terms, ranked matches, and a shared offer object. Most novel and closest to a differentiated booking workflow.
+- **F · Landing variants**: search-first, live-scene proof/momentum, and two-door entry for bookers vs. artists/teams.
+
+### Product Read
+
+- Current implementation has mostly been moving along **C** because availability was the immediate broken workflow.
+- The strongest longer-term architecture likely combines **E + D + C**: a brief bar creates structured booking intent, the org/roster workspace owns operations, and calendar windows/holds become the scheduling substrate.
+- **B** remains valuable for the public/creative feel, especially landing and discovery, but should not expose sensitive artist details to anonymous visitors.
+- Wireframe copy includes some "no middleman" language; keep the structure, but adapt voice to the previously approved position: real artists, real teams, direct booking infrastructure, not anti-manager framing.
+
+## 2026-06-26 — Landing page taste reset spec
+
+### Decision
+
+- User approved **Option 3: Product Spine Reset** and asked to start with the landing page.
+- The landing page should become the first expression of the future **Describe the Gig + Roster HQ + Book the Window** product spine, not a standalone marketing hero.
+
+### Design Direction
+
+- Signature interaction: a living booking brief that visually resolves plain-language gig intent into structured terms.
+- Public surface should carry scene energy and dev-only examples without exposing real artist booking details.
+- Landing composition should move away from split dark-SaaS hero/card patterns and toward a more spatial, music-native, motion-led front door.
+- Orange remains the signal color, but should act like live infrastructure/status rather than a blanket theme.
+
+### Artifact
+
+- Added spec: `docs/superpowers/specs/2026-06-26-landing-brief-reset-design.md`.
+
+### Implementation Boundary
+
+- Next pass should focus on `/` plus landing-specific components/data only.
+- Do not add production celebrity likenesses, database tables, paid assets, or public booking APIs in this pass.
+- Public/private artist access remains a follow-up, but the landing reset must not introduce new detail leaks.
