@@ -166,3 +166,27 @@ Persistent notes for the design and build process. Each entry should capture the
 - Final subagent review found no critical issues.
 - Re-verification after review fixes: typecheck passed, lint passed, production build passed, gate tests passed `8/8`, and HTTP smoke passed for `/`, `/artists`, `/artists/limmi-sendrixx`, `/sign-in`, and `/sign-up`.
 - Remaining important review item is true browser/mobile screenshot QA. This environment has no Browser plugin, no local Playwright/Puppeteer package, and no system Chrome/Firefox binary, so screenshot QA is still blocked without adding tooling.
+
+## 2026-06-25 — Auth preview fix and design correction feedback
+
+### User Feedback
+
+- Current visual foundation still reads too generic/static and too close to common quick-generated app design.
+- Landing page needs actual scroll depth, scene energy, examples, movement, and a less suffocated feel.
+- Public artist surfaces should not expose real artist profile details, availability, booking details, or location/market data to anonymous visitors.
+- The `~/incubator/ui-testing` prototype at `http://localhost:8000/` remains an important vibe reference: fluid cursor/background energy, grain, reveal motion, breathing room, and a search-as-entry utility.
+- Temporary development artist examples may use ASAP Rocky, Fakemink, and PinkPantheress imagery in that order, but this must be clearly treated as development-only placeholder content and never production launch material.
+
+### Debugging
+
+- Sign-in/sign-up failed on the stable production preview because Better Auth rejected `Origin: http://localhost:3002`.
+- Root cause: local `.env` had `BETTER_AUTH_URL=http://localhost:3000`, while the stable preview was running on `3002`.
+- Added local trusted origins for `3000`, `3001`, and `3002`, with `BETTER_AUTH_TRUSTED_ORIGINS` override support.
+
+### Verification
+
+- Typecheck passed after the auth fix.
+- Lint passed after the auth fix.
+- Production build passed after the auth fix.
+- Playwright is now installed locally. A Playwright browser pass confirmed sign-up from `http://localhost:3002/sign-up` succeeds and lands on `/account`.
+- Playwright screenshots captured current app desktop/mobile and the `localhost:8000` prototype for visual comparison.
