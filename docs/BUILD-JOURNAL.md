@@ -223,21 +223,22 @@ Persistent notes for the design and build process. Each entry should capture the
 
 ### Decision
 
-- User approved the landing brief reset direction after the PPTX/wireframe review.
-- Created `docs/superpowers/plans/2026-06-26-landing-brief-reset.md` as the execution plan for the next build slice.
-- Start with a frontend-only homepage reset rather than pulling API-first work forward into this pass.
+- User approved the landing brief reset direction.
+- Implementation will start with a frontend-only landing reset rather than backend/API expansion.
+- The page will center a living booking brief, privacy-safe scene teasers, the Describe the Gig -> Match real teams -> Request a window spine, two audience doors, and concrete trust promises.
 
 ### Planned Shape
 
 - Central product moment: a living booking brief that turns a rough gig ask into structured terms.
 - Scroll depth: privacy-safe scene strip, Describe the Gig -> Match real teams -> Request a window workflow, two audience doors, and a concrete trust section.
 - Visual direction: sharper orange signal over obsidian/bone surfaces, fewer decorative boxes, more editorial scale and motion.
+- Created `docs/superpowers/plans/2026-06-26-landing-brief-reset.md` as the execution plan for the next build slice.
 
 ### Guardrails
 
 - Public landing content must not expose real artist booking details.
-- Development artist examples stay placeholder-only until the user supplies local approved assets or real launch artists.
-- Verification must include typecheck, lint, production build, and Playwright desktop/mobile screenshot QA.
+- Development artist examples are placeholder-only and must be replaced before production launch.
+- Build verification must include typecheck, lint, production build, and Playwright desktop/mobile screenshot QA.
 
 ### Follow-Ups
 
