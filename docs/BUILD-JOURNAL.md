@@ -219,6 +219,26 @@ Persistent notes for the design and build process. Each entry should capture the
 - Playwright availability flow passed on port `3002`: sign up, seed owned test artist, open availability management, click a date range, select `New York, NY`, select travel terms, submit, and confirm the window appears.
 - Playwright screenshots captured desktop before/after and mobile at `/tmp/showman-availability-repair`.
 
+## 2026-06-26 — Landing brief reset implementation plan
+
+### Decision
+
+- User approved the landing brief reset direction after the PPTX/wireframe review.
+- Created `docs/superpowers/plans/2026-06-26-landing-brief-reset.md` as the execution plan for the next build slice.
+- Start with a frontend-only homepage reset rather than pulling API-first work forward into this pass.
+
+### Planned Shape
+
+- Central product moment: a living booking brief that turns a rough gig ask into structured terms.
+- Scroll depth: privacy-safe scene strip, Describe the Gig -> Match real teams -> Request a window workflow, two audience doors, and a concrete trust section.
+- Visual direction: sharper orange signal over obsidian/bone surfaces, fewer decorative boxes, more editorial scale and motion.
+
+### Guardrails
+
+- Public landing content must not expose real artist booking details.
+- Development artist examples stay placeholder-only until the user supplies local approved assets or real launch artists.
+- Verification must include typecheck, lint, production build, and Playwright desktop/mobile screenshot QA.
+
 ### Follow-Ups
 
 - Existing gate tests still assert anonymous users can view full artist profiles; this needs to change when public/private artist access is redesigned.
