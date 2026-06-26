@@ -1,7 +1,7 @@
 export type BadgeTone = "default" | "orange" | "open" | "blocked" | "muted";
 
 const base =
-  "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold";
+  "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em]";
 
 const tones: Record<BadgeTone, string> = {
   default:
@@ -9,9 +9,9 @@ const tones: Record<BadgeTone, string> = {
   orange:
     "border-[rgba(255,122,26,0.45)] bg-[rgba(255,122,26,0.14)] text-[#ffb06a]",
   open:
-    "border-[rgba(110,231,168,0.45)] bg-[rgba(110,231,168,0.12)] text-[var(--showman-success)]",
+    "border-[rgba(110,231,168,0.42)] bg-[rgba(110,231,168,0.11)] text-[#a9ffd0]",
   blocked:
-    "border-[rgba(255,92,122,0.45)] bg-[rgba(255,92,122,0.12)] text-[var(--showman-danger)]",
+    "border-[rgba(255,122,26,0.38)] bg-[rgba(255,122,26,0.1)] text-[#ffb06a]",
   muted:
     "border-[var(--showman-line)] bg-transparent text-[var(--showman-muted)]",
 };

@@ -190,3 +190,38 @@ Persistent notes for the design and build process. Each entry should capture the
 - Production build passed after the auth fix.
 - Playwright is now installed locally. A Playwright browser pass confirmed sign-up from `http://localhost:3002/sign-up` succeeds and lands on `/account`.
 - Playwright screenshots captured current app desktop/mobile and the `localhost:8000` prototype for visual comparison.
+
+## 2026-06-25 — Availability and location UX repair
+
+### User Feedback
+
+- Availability management felt almost unusable because the native date picker affordance was visually hidden and the visible calendar was not clickable.
+- `Open` / `Blocked` language and badge styling felt generic.
+- Free-text `market` entry is not enough for future search or matching; misspellings and spacing differences would make location matching brittle.
+- Artist profile creation still feels under-customized and should eventually support richer identity, imagery, socials/media, booking regions, and travel terms.
+- The `ui-testing/showman-v2` prototype remains a reference for smoother, less boxed interactions: clear focus states, breathing room, animated/revealed surfaces, and a human booking flow.
+
+### Implemented
+
+- Added `web/lib/booking-locations.ts` with curated starter booking-location groups and travel-policy options.
+- Replaced the availability page's old black native date fields plus display-only calendar with a clickable two-month availability composer.
+- Composer now supports date-range selection, `Taking requests` / `Not accepting` posture, structured location chips, travel terms, internal note, and hidden fields that submit through the existing server action.
+- Updated native date/select affordances so any fallback date input has visible pointer/calendar behavior.
+- Restyled status badges away from generic admin-state wording.
+- Kept the database unchanged for this pass: `market` stores the selected location label, and travel policy is stored in the existing note text. A real location/search schema remains a future design task.
+
+### Verification
+
+- Typecheck passed (`cd web && npx tsc --noEmit`).
+- Lint passed (`cd web && npm run lint`).
+- Production build passed (`cd web && npm run build`).
+- Gate tests passed `8/8` on port `3001`.
+- Playwright availability flow passed on port `3002`: sign up, seed owned test artist, open availability management, click a date range, select `New York, NY`, select travel terms, submit, and confirm the window appears.
+- Playwright screenshots captured desktop before/after and mobile at `/tmp/showman-availability-repair`.
+
+### Follow-Ups
+
+- Existing gate tests still assert anonymous users can view full artist profiles; this needs to change when public/private artist access is redesigned.
+- The new artist form did not reliably redirect in one headless browser attempt; investigate during the profile customization pass.
+- Design a real structured location model before relying on location search/matching in production.
+- Full landing page and public artist directory still need the Living Raw Gallery redesign pass.
