@@ -500,3 +500,29 @@ Persistent notes for the design and build process. Each entry should capture the
 - Verified the local database now has `user.onboarding_intent`, `artist_profiles.org_id`, `orgs`, `memberships`, `booker_profiles`, and `booking_requests`.
 - Verified real Better Auth sign-up and sign-in requests against `http://localhost:3004` now return `200 OK` with session tokens.
 - Removed the temporary `debug-auth-probe*@test.local` verification account from the local database.
+
+## 2026-06-26 — Workspace/principal model recovery review
+
+### Context
+
+- User reported that a booker-only account still sees every dashboard option, including `Team dashboard`, and called out that this proves the app is not honoring the platform's basic artist/team vs booker/workspace logic.
+- User explicitly requested code review, ideation, and planning before more whack-a-mole implementation.
+- Subagent review and direct repo reading confirmed the foundation docs treat `User` as the actor and `Org` / `ArtistProfile` / `BookerProfile` as principals.
+
+### Artifacts
+
+- Added `docs/architecture/current-erd.md` with the current implemented database ERD and a drift map against the intended model.
+- Added `docs/reviews/2026-06-26-platform-model-review.md` with high-severity findings for account routing, account-level intent, personal-only booker profiles, and sign-up/onboarding coupling.
+- Added `docs/ideation/2026-06-26-platform-foundation-recovery-ideation.md` with ranked recovery directions.
+- Added `docs/plans/2026-06-26-003-refactor-workspace-principal-foundation-plan.md` as the next implementation plan.
+- Folded in the implementation review finding that private `draft` booking requests currently leak into artist-team inbound queues because the query does not filter to `request_sent`.
+
+### Verdict
+
+- The current workflow schema has useful pieces, but the app is still routing from signed-in user state and binary onboarding intent instead of actual principals/workspaces.
+- Next implementation should first hotfix draft visibility, then move to the account workspace selector and sign-up/onboarding model, then expand org-backed booker profiles and richer booker dossier fields.
+
+### Boundary
+
+- No product code was changed in this turn.
+- The purpose of this turn was to re-anchor the build in the domain model before changing routes, schema, or UI again.
