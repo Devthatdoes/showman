@@ -31,7 +31,8 @@ export default async function AccountPage() {
             Your account
           </h1>
           <p className="max-w-2xl text-sm leading-6 text-[var(--showman-muted)]">
-            Your profiles are the supply-side base of showman. Orgs, teams, and on-behalf-of roles come next.
+            Your profiles are the supply-side base of showman: real artist identity,
+            visible availability, and clean ownership for the booking rails ahead.
           </p>
           <div className="flex flex-col gap-2">
             <p className="font-medium text-[var(--showman-bone)]">{user.name}</p>

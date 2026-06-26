@@ -38,13 +38,13 @@ export default function Home() {
                 <p className="text-4xl font-black uppercase leading-none tracking-[-0.06em]">
                   Find the act.
                   <br />
-                  Hold the date.
+                  Read the room.
                   <br />
                   Make it real.
                 </p>
                 <p className="mt-4 max-w-xs text-sm leading-6 text-[var(--showman-muted)]">
-                  Phase 0 is live with artist profiles and availability. Booking and escrow
-                  come next.
+                  Phase 0 is live with artist profiles and availability, setting the base
+                  for the booking rails that come after.
                 </p>
               </div>
             </div>

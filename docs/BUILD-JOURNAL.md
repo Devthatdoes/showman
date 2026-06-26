@@ -153,3 +153,16 @@ Persistent notes for the design and build process. Each entry should capture the
 - Tune exact orange shade, density, and mobile spacing after screenshot review.
 - Public JSON read endpoints for artist discovery/profile after visual foundation stabilizes.
 - Org/RBAC planning remains the next major domain increment.
+
+## 2026-06-25 — Review follow-up
+
+### Adjusted
+
+- Tightened public/account copy so the UI stays Phase 0-safe: profiles, availability, ownership, and future booking rails, without promising escrow, holds, org/RBAC, or on-behalf-of workflows in the current app.
+- Updated `web/README.md` to reflect the local system font stack after removing `next/font`.
+
+### Review Notes
+
+- Final subagent review found no critical issues.
+- Re-verification after review fixes: typecheck passed, lint passed, production build passed, gate tests passed `8/8`, and HTTP smoke passed for `/`, `/artists`, `/artists/limmi-sendrixx`, `/sign-in`, and `/sign-up`.
+- Remaining important review item is true browser/mobile screenshot QA. This environment has no Browser plugin, no local Playwright/Puppeteer package, and no system Chrome/Firefox binary, so screenshot QA is still blocked without adding tooling.

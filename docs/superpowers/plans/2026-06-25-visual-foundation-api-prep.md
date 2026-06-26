@@ -993,6 +993,12 @@ Expected:
 - Public pages still work while signed out.
 - Owner-only pages still redirect for anonymous and non-owner users.
 
+Execution note, 2026-06-25:
+
+- Code/build/HTTP verification passed for the visual foundation implementation.
+- A final review requested desktop/mobile screenshot QA before merge.
+- Screenshot QA remains pending because this session has no Browser plugin, no local Playwright/Puppeteer package, and no system Chrome/Firefox binary available. Do not treat this checklist as fully complete until a real browser pass is run.
+
 - [ ] **Step 4: Update build journal**
 
 Append to `docs/BUILD-JOURNAL.md`:
