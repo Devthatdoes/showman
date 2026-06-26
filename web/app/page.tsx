@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LivingBookingBrief from "@/components/landing/living-booking-brief";
 import { buttonStyles } from "@/components/ui/button";
 import { panelStyles } from "@/components/ui/panel";
 
@@ -28,6 +29,7 @@ export default function Home() {
         </div>
 
         <div className={`${panelStyles("elevated")} p-4 sm:p-5`}>
+          <LivingBookingBrief />
           <div className="aspect-[4/5] rounded-2xl border border-[var(--showman-line)] bg-[radial-gradient(circle_at_70%_20%,rgba(255,122,26,0.34),transparent_32%),linear-gradient(145deg,#25211c,#0f0e0d)] p-5">
             <div className="flex h-full flex-col justify-between">
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)]">

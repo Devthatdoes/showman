@@ -67,3 +67,113 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator,
 input[type="date"]:focus::-webkit-calendar-picker-indicator {
   opacity: 1;
 }
+
+.landing-brief {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 248, 236, 0.16);
+  background:
+    radial-gradient(circle at var(--brief-x, 64%) var(--brief-y, 42%), rgba(255, 106, 0, 0.34), transparent 12rem),
+    linear-gradient(140deg, rgba(255, 248, 236, 0.08), rgba(255, 248, 236, 0.025) 38%, rgba(255, 106, 0, 0.08)),
+    #11100e;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.landing-brief::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(rgba(255, 248, 236, 0.055) 1px, transparent 1px);
+  background-size: 100% 2.35rem;
+  mix-blend-mode: screen;
+  opacity: 0.28;
+}
+
+.landing-brief__bar,
+.landing-brief__fragments {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--showman-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.landing-brief__input {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(2rem, 8vw, 4.75rem);
+  width: 100%;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--showman-bone);
+  font-size: clamp(2rem, 8vw, 5.8rem);
+  font-weight: 950;
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.landing-brief__input:focus-visible {
+  outline: 2px solid var(--showman-orange);
+  outline-offset: 0.4rem;
+}
+
+.landing-brief__chips {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(1.25rem, 4vw, 2.25rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.landing-brief__chip {
+  animation: resolve-chip 520ms ease both;
+  animation-delay: calc(var(--chip-index, 0) * 70ms);
+  border: 1px solid rgba(255, 248, 236, 0.15);
+  background: rgba(255, 248, 236, 0.07);
+  padding: 0.55rem 0.72rem;
+  color: var(--showman-bone);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.landing-brief__chip--signal {
+  border-color: rgba(255, 106, 0, 0.55);
+  background: rgba(255, 106, 0, 0.16);
+  color: #ffb06a;
+}
+
+.landing-brief__fragments {
+  margin-top: clamp(2rem, 6vw, 4rem);
+  justify-content: flex-start;
+}
+
+@keyframes resolve-chip {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-brief__chip {
+    animation: none;
+  }
+}
