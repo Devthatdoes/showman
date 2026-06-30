@@ -1,55 +1,34 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useState } from 'react';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 
 export default function FluidBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let width = 0;
-    let height = 0;
-    let animationFrame = 0;
-    const pointer = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.35 };
-
-    const resize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+    const handleMouseMove = (e: any) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
     };
-
-    const draw = () => {
-      ctx.clearRect(0, 0, width, height);
-      const gradient = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, 600);
-      gradient.addColorStop(0, "rgba(255, 106, 0, 0.15)");
-      gradient.addColorStop(1, "rgba(22, 22, 22, 0)");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
-      animationFrame = requestAnimationFrame(draw);
-    };
-
-    const handlePointer = (event: PointerEvent) => {
-      pointer.x = event.clientX;
-      pointer.y = event.clientY;
-      document.documentElement.style.setProperty("--raw-pointer-x", `${event.clientX}px`);
-      document.documentElement.style.setProperty("--raw-pointer-y", `${event.clientY}px`);
-    };
-
-    resize();
-    draw();
-    window.addEventListener("resize", resize);
-    window.addEventListener("pointermove", handlePointer);
-
-    return () => {
-      cancelAnimationFrame(animationFrame);
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("pointermove", handlePointer);
-    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  return <canvas ref={canvasRef} className="raw-fluid-bg" aria-hidden="true" />;
+  // Use springs for a "heavy", organic feel to the movement
+  const smoothX = useSpring(mousePos.x, { stiffness: 50, damping: 20 });
+  const smoothY = useSpring(mousePos.y, { stiffness: 50, damping: 20 });
+
+  return (
+    <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+      <motion.div 
+        className="absolute w-[80vw] h-[80vw] rounded-full blur-[120px] opacity-30"
+        style={{
+          backgroundColor: 'var(--raw-red)',
+          left: useTransform(smoothX, (val) => `calc(${val}px - 40vw)`),
+          top: useTransform(smoothY, (val) => `calc(${val}px - 40vw)`),
+        }}
+      />
+      <div className="fixed inset-0 opacity-0.05 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+    </div>
+  );
 }

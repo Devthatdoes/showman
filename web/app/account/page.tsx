@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { getActorWorkspace } from "@/server/identity/queries";
 import SignOutButton from "@/components/sign-out-button";
 import { buttonStyles } from "@/components/ui/button";
 import { panelStyles } from "@/components/ui/panel";
@@ -22,6 +23,9 @@ export default async function AccountPage({
   const { user } = session;
   const { artist: requestedArtist } = await searchParams;
 
+  // Fetch actual workspaces instead of showing unconditional links
+  const workspace = await getActorWorkspace(user.id);
+
   return (
     <div className="min-h-screen">
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14 flex flex-col gap-8">
@@ -35,7 +39,7 @@ export default async function AccountPage({
           <p className="max-w-2xl text-sm leading-6 text-[var(--showman-muted)]">
             {requestedArtist
               ? "You are signed in. Finish onboarding to turn the selected artist into a structured booking request."
-              : "You are signed in. Choose the working surface that matches what you need to do next."}
+              : "You are signed in. Choose the workspace that matches what you need to do next."}
           </p>
           <div className="flex flex-col gap-2">
             <p className="font-medium text-[var(--showman-bone)]">{user.name}</p>
@@ -47,41 +51,78 @@ export default async function AccountPage({
             <Link href="/artists" className={buttonStyles("secondary")}>
               Browse artists
             </Link>
-            <Link href="/onboarding" className={buttonStyles("secondary")}>
-              Onboarding
-            </Link>
-            <Link href="/team" className={buttonStyles("primary")}>
-              Team dashboard
-            </Link>
-            <Link href="/booker" className={buttonStyles("secondary")}>
-              Booker dashboard
-            </Link>
+            {/* Only show onboarding if they have no active workspace */}
+            {workspace.orgs.length === 0 && !workspace.bookerProfile && (
+              <Link href="/onboarding" className={buttonStyles("secondary")}>
+                Onboarding
+              </Link>
+            )}
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Link href="/team" className={`${panelStyles("subtle")} block p-5 transition hover:border-[#ff8a2a]`}>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ffb06a]">
-              Artist / team
-            </p>
-            <h2 className="mt-3 text-xl font-black uppercase tracking-[-0.04em] text-[var(--showman-bone)]">
-              Manage profiles
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">
-              Profiles, readiness, inbound requests, and calendar attention belong in the team dashboard.
-            </p>
-          </Link>
-          <Link href="/booker" className={`${panelStyles("subtle")} block p-5 transition hover:border-[#ff8a2a]`}>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ffb06a]">
-              Booker
-            </p>
-            <h2 className="mt-3 text-xl font-black uppercase tracking-[-0.04em] text-[var(--showman-bone)]">
-              Build requests
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">
-              Events, requested artists, and coordination context belong in the booker dashboard.
-            </p>
-          </Link>
+          {/* Dynamic Org/Team Workspaces */}
+          {workspace.orgs.map((orgItem) => (
+            <Link 
+              key={orgItem.id} 
+              href={`/team?orgId=${orgItem.id}`} 
+              className={`${panelStyles("subtle")} block p-5 transition hover:border-[#ff8a2a]`}
+            >
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ffb06a]">
+                Artist / Team
+              </p>
+              <h2 className="mt-3 text-xl font-black uppercase tracking-[-0.04em] text-[var(--showman-bone)]">
+                {orgItem.name}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">
+                Manage profiles, readiness, and inbound requests for this roster.
+              </p>
+            </Link>
+          ))}
+
+
+          {/* Personal or Org-backed Booker Profile */}
+          {workspace.bookerProfile && (
+            <Link href="/booker" className={`${panelStyles("subtle")} block p-5 transition hover:border-[#ff8a2a]`}>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ffb06a]">
+                Booker
+              </p>
+              <h2 className="mt-3 text-xl font-black uppercase tracking-[-0.04em] text-[var(--showman-bone)]">
+                {workspace.bookerProfile.displayName}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">
+                Build requests, manage events, and coordinate booking context.
+              </p>
+            </Link>
+          )}
+
+          {/* Setup Options for missing lanes */}
+          {workspace.orgs.length === 0 && (
+            <Link href="/onboarding" className={`${panelStyles("subtle")} block p-5 border-dashed border-2 border-white/10 transition hover:border-[#ff8a2a]`}>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/40">
+                Setup
+              </p>
+              <h2 className="mt-3 text-xl font-black uppercase tracking-[-0.04em] text-[var(--showman-bone)]">
+                Create Artist Team
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">
+                Establish a professional roster to start managing artist bookings.
+              </p>
+            </Link>
+          )}
+          {!workspace.bookerProfile && (
+            <Link href="/onboarding" className={`${panelStyles("subtle")} block p-5 border-dashed border-2 border-white/10 transition hover:border-[#ff8a2a]`}>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/40">
+                Setup
+              </p>
+              <h2 className="mt-3 text-xl font-black uppercase tracking-[-0.04em] text-[var(--showman-bone)]">
+                Create Booker Profile
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">
+                Setup your professional identity to send booking requests.
+              </p>
+            </Link>
+          )}
         </div>
       </div>
     </div>

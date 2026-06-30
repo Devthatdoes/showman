@@ -1,31 +1,31 @@
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
+import { motion, useInView } from "framer-motion";
 
-export default function RevealOnScroll() {
-  useEffect(() => {
-    const elements = Array.from(document.querySelectorAll(".raw-reveal"));
+interface RevealProps {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}
 
-    if (!("IntersectionObserver" in window)) {
-      elements.forEach((element) => element.classList.add("raw-visible"));
-      return;
-    }
+export default function RevealOnScroll({ children, delay = 0, className = "" }: RevealProps) {
+  const ref = React.useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("raw-visible");
-          }
-        });
-      },
-      { threshold: 0.1 },
-    );
-
-    elements.forEach((element) => observer.observe(element));
-
-    return () => observer.disconnect();
-  }, []);
-
-  return null;
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
+      animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
+      transition={{
+        duration: 0.8,
+        delay,
+        ease: [0.2, 1, 0.3, 1], // Custom cubic-bezier for a "premium" snap
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
 }

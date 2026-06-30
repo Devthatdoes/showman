@@ -526,3 +526,45 @@ Persistent notes for the design and build process. Each entry should capture the
 
 - No product code was changed in this turn.
 - The purpose of this turn was to re-anchor the build in the domain model before changing routes, schema, or UI again.
+
+## 2026-06-26 — Account Workspace Selector Implementation
+### Implemented
+- Refactored `/app/account/page.tsx` to replace unconditional dashboard links with a dynamic workspace selector.
+- Integrated `getActorWorkspace` to render actual Org memberships and Booker Profiles from the database.
+- Added conditional "Setup" paths for missing capabilities, ensuring users are routed to onboarding only when necessary.
+- Removed binary "side" selection from the account view, aligning with the Actor/Principal domain model.
+
+### Verification
+- Fixed a core architectural regression where booker-only accounts were pushed toward team dashboards.
+- Verified that dual-capability users now see both their Orgs and their Booker Profile as distinct workspaces.
+
+## 2026-06-26 — The "Living Gallery" Implementation
+### Goal
+Transition the web application from a functional "SaaS skeleton" to a high-end, organic digital experience. The focus is on "Experience Design" rather than "UI Design," prioritizing motion, asymmetry, and a raw, music-native energy.
+
+### Tech Stack Addition
+- `framer-motion`: Integrated for spring physics, shared element transitions, and kinetic layouts.
+- Variable Fonts: Shifted toward dynamic weight/slant shifts for "breathing" typography.
+
+### Implementation Plan
+1. **Visual Foundation**: Implement a global grain overlay and a fluid, cursor-responsive background.
+2. **Organic Layouts**: Replace rigid grids with asymmetric, non-linear "Discovery Streams."
+3. **Kinetic Interactions**: Add magnetic buttons, spring-loaded reveals, and kinetic typography.
+4. **Spatial Navigation**: Replace the static top-nav with a floating, contextual navigation pill.
+5. **Seamless Transitions**: Implement shared element transitions for artist profiles to remove "hard" page loads.
+6. **Professional Booking**: Refine the booking request flow into a a la carte, guided concierge experience.
+
+## 2026-06-28 — Local Dev Server Restart
+
+### Operational Note
+- Restarted the Next.js dev server for the web app on `http://localhost:3004`.
+- Stopped the previous `next dev -p 3004` / `next-server` processes that were holding port 3004.
+- Started a fresh `npm run dev -- -p 3004` session from `web/`.
+
+### Verification
+- Confirmed `GET /` returns `HTTP/1.1 200 OK`.
+- Confirmed port `3004` is held by the fresh `next-server` process.
+- Checked host memory after restart: `15Gi` total, `7.3Gi` used, `8.2Gi` available, `1.1Gi` swap used.
+
+### Follow-Up
+- Continue watching the dev server memory footprint because previous runs have shown runaway Next/Turbopack RSS growth.
