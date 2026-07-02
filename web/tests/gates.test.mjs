@@ -28,7 +28,7 @@ async function signup(email) {
 const visit = (path, cookie) =>
   fetch(`${BASE}${path}`, { headers: cookie ? { cookie } : {} });
 
-let owner, other, outsider, slug, incompleteSlug, imageOnlySlug, bookerProfileId, bookingRequestId;
+let owner, other, outsider, slug, incompleteSlug, imageOnlySlug, bookerProfileId, bookingRequestId, acceptedRequestId, draftRequestId;
 
 before(async () => {
   owner = await signup(`owner_${rand()}@test.local`);
@@ -66,9 +66,21 @@ before(async () => {
     [bookerProfileId, slug, "CI Test Event", "Test Market", "A structured pitch for the test artist."],
   );
   bookingRequestId = request.rows[0].id;
+  const acceptedRequest = await pool.query(
+    "insert into booking_requests (booker_profile_id, artist_id, status, event_name, event_type, market, pitch) select $1, id, 'accepted', $3, 'show', $4, $5 from artist_profiles where slug = $2 returning id",
+    [bookerProfileId, slug, "CI Accepted Event", "Test Market", "An already accepted pitch for the test artist."],
+  );
+  acceptedRequestId = acceptedRequest.rows[0].id;
+  const draftRequest = await pool.query(
+    "insert into booking_requests (booker_profile_id, artist_id, status, event_name, event_type, market, pitch) select $1, id, 'draft', $3, 'show', $4, $5 from artist_profiles where slug = $2 returning id",
+    [bookerProfileId, slug, "CI Draft Event", "Test Market", "A private unsent draft pitch."],
+  );
+  draftRequestId = draftRequest.rows[0].id;
 });
 
 after(async () => {
+  if (draftRequestId) await pool.query("delete from booking_requests where id = $1", [draftRequestId]);
+  if (acceptedRequestId) await pool.query("delete from booking_requests where id = $1", [acceptedRequestId]);
   if (bookingRequestId) await pool.query("delete from booking_requests where id = $1", [bookingRequestId]);
   if (bookerProfileId) await pool.query("delete from booker_profiles where id = $1", [bookerProfileId]);
   await pool.query("delete from artist_profiles where slug in ($1, $2, $3)", [slug, incompleteSlug, imageOnlySlug]);
@@ -174,4 +186,36 @@ test("signed-in user without booker profile is sent toward onboarding", async ()
   const res = await visit("/booker", owner.cookie);
   const body = await res.text();
   assert.match(body, /Create your booker profile first/);
+});
+
+test("owner: a sent request exposes accept and decline controls", async () => {
+  const res = await visit("/team", owner.cookie);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /CI Test Event/);
+  assert.match(body, /Accept/);
+  assert.match(body, /Decline/);
+});
+
+test("owner: an accepted request shows as accepted, not as a pending control", async () => {
+  const res = await visit("/team", owner.cookie);
+  const body = await res.text();
+  assert.match(body, /CI Accepted Event/);
+  assert.match(body, /Accepted in principle/);
+});
+
+test("booker: dashboard reflects an accepted request", async () => {
+  const res = await visit("/booker", other.cookie);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /CI Accepted Event/);
+  assert.match(body, /accepted/i);
+});
+
+test("privacy: a booker's unsent draft never reaches the artist team queue", async () => {
+  const res = await visit("/team", owner.cookie);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.doesNotMatch(body, /CI Draft Event/);
+  assert.doesNotMatch(body, /A private unsent draft pitch/);
 });
