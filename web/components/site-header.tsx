@@ -15,8 +15,8 @@ export default async function SiteHeader() {
           <Link href="/artists" className="hidden text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)] transition-colors hover:text-[var(--showman-orange)] sm:inline">
             Artists
           </Link>
-          <Link href="/#bookers" className="hidden text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)] transition-colors hover:text-[var(--showman-orange)] sm:inline">
-            Bookers
+          <Link href="/booking" className="hidden text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)] transition-colors hover:text-[var(--showman-orange)] sm:inline">
+            Booking
           </Link>
           {session && (
             <>

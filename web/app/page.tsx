@@ -62,15 +62,16 @@ export default async function Home() {
         <HomeArtistExperience artists={artists} />
       </section>
 
-      <section className="relative z-10 py-32 px-6 max-w-7xl mx-auto border-t border-white/5">
+      <section className="relative z-10 py-32 px-6 max-w-7xl mx-auto border-t border-white/5" id="booking">
         <RevealOnScroll className="flex flex-col items-center text-center space-y-12">
-          <h2 className="text-6xl font-bold tracking-tighter uppercase">Bookers</h2>
+          <h2 className="text-6xl font-bold tracking-tighter uppercase">Booking</h2>
           <p className="text-lg opacity-60 max-w-xl mx-auto font-curated italic">
-            Verified Labels & Promoters providing direct rails for the next wave of live culture.
+            Event briefs, real artist teams, and request coordination built for the people
+            pushing live culture forward.
           </p>
           <div className="flex gap-4">
              <MagneticButton className="btn-raw px-8 py-4 text-sm uppercase tracking-widest font-bold">
-                <Link href="/sign-up?role=booker">Join as Booker</Link>
+                <Link href="/booking">Start booking</Link>
              </MagneticButton>
           </div>
         </RevealOnScroll>

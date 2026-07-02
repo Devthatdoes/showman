@@ -670,3 +670,106 @@ Implement a "Sonic Identity" feature where artist profiles can trigger an audio 
 
 ### Follow-Up
 - The same unrelated remote grain texture `404` remains and should be replaced with a local/CSS texture in a separate visual reliability pass.
+
+## 2026-07-02 — Booking Surface Planning Correction
+
+### Context
+- The next likely product increment is to replace the homepage-only `Bookers` anchor with a real `/booking` surface and rename the public nav language from `Bookers` to `Booking`.
+- User pushed back on a too-simple recommendation: "signed-in user without a BookerProfile goes to booking onboarding" is not precise enough and risks repeating the current account-role confusion.
+- The foundation model remains actor/principal based: a `User` is the actor; `Org`, `ArtistProfile`, and `BookerProfile` are principals/workspaces that carry authority, reputation, and deal state.
+
+### Finding
+- "Signed-in user" is the wrong routing primitive for booking.
+- An actor may be:
+  - an artist managing only their own `ArtistProfile`,
+  - a manager/team member acting for an artist roster `Org`,
+  - a booker/promoter acting through a personal `BookerProfile`,
+  - a festival/venue/promoter `Org` that books talent,
+  - or a dual-capability workspace that both manages artists and books other artists.
+- Defaulting every signed-in actor into booking setup could blur supply-side management with demand-side booking, create accidental buyer identities, and make dashboards feel mixed together.
+
+### Planned Direction
+- Create `/booking` as a real booking entry surface, but do not treat it as a generic "signed-in user setup" page.
+- Rename public navigation from `Bookers` to `Booking`.
+- Keep `/booker` as the authenticated dashboard for an existing `BookerProfile` or booking-capable workspace.
+- Make `/booking` route by explicit capability:
+  - Anonymous visitors learn what booking on Showman means and can start a booking-oriented account/onboarding path.
+  - Actors with an existing personal `BookerProfile` can continue to `/booker`, create an event brief, or start a request.
+  - Actors with an `Org` should see whether that org has booking capability or an org-backed `BookerProfile`; they should not be silently treated as a personal booker.
+  - Artist/team actors without booking capability should be offered a deliberate "add booking capability" path with clear separation from artist management.
+  - Dual-capability users/orgs must select which principal/workspace they are acting as before creating events or requests.
+
+### Planned Changes
+- Add a `/booking` route that reads actual actor workspace/principal state before presenting next actions.
+- Update header navigation to point `Booking` at `/booking`, not `/#bookers`.
+- Shrink or rename the homepage `Bookers` section into a lightweight `Booking` strip that links to the dedicated surface.
+- Avoid hardcoded dashboard promises; use live workspace state from existing identity queries where available.
+- Do not create new buyer/booker records automatically from a generic signed-in session.
+
+### Outcome Aimed For
+- Public navigation communicates the product spine: artist discovery and booking workflow, not a one-off homepage section.
+- Booking capability becomes explicit and principal-scoped.
+- Artist/team management and booking-other-artists workflows can coexist without collapsing into one confusing account mode.
+- The implementation sets up later org-backed booker profiles and richer booking dashboards instead of deepening the current binary account-side bug.
+
+### Open Questions Before Implementation
+- Should the first `/booking` pass support org-backed booker setup, or only display the need for it while keeping creation deferred?
+- Should the nav label be exactly `Booking`, or should the route use `Booking Requests` / `Book Talent` in page copy while nav stays concise?
+- For an artist/team-only actor, should `/booking` default to education + deliberate setup, or should it first ask which workspace/principal they want to act through?
+
+## 2026-07-02 — Booking Entry Surface Implementation
+
+### Planned Action
+
+- Implement the documented `/booking` surface as the public and signed-in entry point for booking workflow.
+- Rename navigation from `Bookers` to `Booking` and point it at `/booking`.
+- Convert the homepage `Bookers` section into a lightweight booking handoff rather than treating all booking value as a landing-page anchor.
+- Preserve the actor/principal boundary: visiting `/booking` must never auto-create a `BookerProfile`.
+
+### Findings
+
+- Existing `getActorWorkspace(user.id)` is enough for a first pass because it returns active org memberships plus the user's personal `BookerProfile`.
+- The current schema can display org context, but org-backed booker capability is not complete enough to create or select safely from this surface.
+- `/booker` should remain an authenticated operational dashboard; `/booking` should explain and route by capability.
+
+### Changes
+
+- Added `web/app/booking/page.tsx` as a server-rendered route that handles anonymous visitors, existing personal bookers, artist/team-only actors, org membership context, and empty setup states.
+- Updated `web/components/site-header.tsx` so the public nav says `Booking` and links to `/booking`.
+- Updated `web/app/page.tsx` so the bottom handoff says `Booking`, links to `/booking`, and uses event/request coordination language instead of `Join as Booker`.
+- Extended `web/tests/gates.test.mjs` to cover anonymous `/booking`, homepage navigation, existing booker continuation, and the regression that artist/team actors are not silently converted into bookers.
+
+### Why / How
+
+- This addresses the product logic issue where `Bookers` was only a homepage section and did not scale to a real platform entry surface.
+- The route is intentionally principal-aware: it reads real workspace state and presents setup as an explicit action rather than treating a signed-in `User` as the booking principal.
+- Org-backed booking remains visible as context but deferred as creation logic, because creating buyer capability for orgs needs a deliberate principal-selection and dossier flow.
+
+### Outcome Aimed For
+
+- Public visitors can understand booking as a first-class Showman workflow.
+- Existing bookers can continue to events, requests, and artist browsing without extra onboarding.
+- Artist/team accounts can add booking capability deliberately without mixing artist-management and buyer workflows by default.
+- The next deeper increment can focus on real principal-scoped onboarding instead of repairing navigation confusion.
+
+### Review Follow-Up
+
+- Code review found the homepage test did not specifically protect the header `Booking` link because the homepage CTA also linked to `/booking`. Tightened the assertion to reject `/#bookers` and match the header anchor shape.
+- Code review found `/booking` setup still handed users into older onboarding language that said "Set up the demand side" and showed both dashboard shortcuts. Updated booker-intent onboarding copy to booking-principal language and removed unconditional cross-dashboard links.
+- The new plan document lives under ignored `/docs/`; it must be force-added with the implementation commit so the reviewed plan is durable.
+- Unrelated `.gitignore` local change (`*-jot`) remains outside this increment and should not be staged with the booking surface work.
+
+### Verification
+
+- Typecheck passed: `cd web && npx tsc --noEmit`.
+- Lint passed with existing warnings only: six `<img>` warnings and one existing unused `useEffect` warning in `reveal-on-scroll.tsx`.
+- HTTP smoke passed for `GET /booking` on `http://localhost:3000`.
+- Gate tests initially failed inside the sandbox because local Postgres access was blocked with `EPERM 127.0.0.1:5432`; elevated runs passed `24/24` before review follow-up and `25/25` after the tightened header/onboarding assertions.
+- Playwright fallback was used because the Browser plugin is unavailable. Desktop and mobile `/booking` browser smoke passed with no framework overlay; screenshots saved to `/tmp/showman-booking-desktop.png` and `/tmp/showman-booking-mobile.png`.
+- Browser smoke still observed the known unrelated `https://grainy-gradients.vercel.app/noise.svg` 404 from the homepage load.
+
+### Remaining Open Questions
+
+- Principal-scoped onboarding remains the next real architecture decision: personal BookerProfile, org-backed BookerProfile, and dual-capability org setup need a dedicated flow rather than query-param intent.
+- Header still shows authenticated `Team` and `Booker` links based on session, not actual capability. This is a known broader navigation bug outside this increment.
+- Org-backed booking is displayed as context only; creating/selecting org-owned buyer profiles is deferred until the workspace selector model is tightened.

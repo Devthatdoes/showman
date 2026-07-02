@@ -30,20 +30,37 @@ export default function OnboardingFlow({
             Onboarding
           </p>
           <h1 className="mt-4 text-4xl font-black uppercase leading-none tracking-[-0.05em] text-[var(--showman-bone)] sm:text-6xl">
-            {isBooker ? "Set up the demand side." : "Set up the artist side."}
+            {isBooker ? "Set up your booking profile." : "Set up your artist workspace."}
           </h1>
           <p className="mt-5 text-sm leading-6 text-[var(--showman-muted)]">
             {isBooker
-              ? "Bookers need a clear dossier and event workspace so requests become trackable work, not loose emails."
+              ? "Booking requests need a clear principal, a credible dossier, and event context before they reach an artist team."
               : "Artist teams need a workspace that can grow into roster, membership, and on-behalf-of authority."}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/team" className={buttonStyles("secondary")}>
-              Team dashboard
-            </Link>
-            <Link href="/booker" className={buttonStyles("secondary")}>
-              Booker dashboard
-            </Link>
+            {isBooker ? (
+              <>
+                {existingBookerProfile && (
+                  <Link href="/booker" className={buttonStyles("secondary")}>
+                    Booker dashboard
+                  </Link>
+                )}
+                <Link href="/artists" className={buttonStyles("secondary")}>
+                  Browse artists
+                </Link>
+              </>
+            ) : (
+              <>
+                {existingOrg && (
+                  <Link href="/team" className={buttonStyles("secondary")}>
+                    Team dashboard
+                  </Link>
+                )}
+                <Link href="/artists/new" className={buttonStyles("secondary")}>
+                  Create artist profile
+                </Link>
+              </>
+            )}
           </div>
         </section>
 
