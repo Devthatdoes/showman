@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { acceptBookingRequest, declineBookingRequest } from "@/app/team/actions";
 import { buttonStyles } from "@/components/ui/button";
 import { panelStyles } from "@/components/ui/panel";
 import type { ArtistProfile } from "@/db/schema";
@@ -109,6 +110,28 @@ export default function TeamDashboard({
                   <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--showman-muted)]">
                     {request.pitch}
                   </p>
+                  {request.status === "request_sent" ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <form action={acceptBookingRequest}>
+                        <input type="hidden" name="requestId" value={request.id} />
+                        <button type="submit" className={buttonStyles("primary")}>
+                          Accept
+                        </button>
+                      </form>
+                      <form action={declineBookingRequest}>
+                        <input type="hidden" name="requestId" value={request.id} />
+                        <button type="submit" className={buttonStyles("secondary")}>
+                          Decline
+                        </button>
+                      </form>
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-xs font-black uppercase tracking-[0.14em] text-[var(--showman-muted)]">
+                      {request.status === "accepted"
+                        ? "Accepted in principle"
+                        : request.status.replace("_", " ")}
+                    </p>
+                  )}
                 </article>
               ))
             )}

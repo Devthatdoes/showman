@@ -28,7 +28,7 @@ async function signup(email) {
 const visit = (path, cookie) =>
   fetch(`${BASE}${path}`, { headers: cookie ? { cookie } : {} });
 
-let owner, other, outsider, slug, incompleteSlug, imageOnlySlug, bookerProfileId, bookingRequestId;
+let owner, other, outsider, slug, incompleteSlug, imageOnlySlug, ownerOrgId, bookerProfileId, bookingRequestId, acceptedRequestId, draftRequestId;
 
 before(async () => {
   owner = await signup(`owner_${rand()}@test.local`);
@@ -56,6 +56,15 @@ before(async () => {
     "insert into availability_windows (artist_id, start_date, end_date, status, market, note) select id, $2, $3, 'open', $4, $5 from artist_profiles where slug = $1",
     [slug, "2031-01-02", "2031-01-04", "Secret Test Market", "Private routing note"],
   );
+  const ownerOrg = await pool.query(
+    "insert into orgs (slug, name, type, owner_user_id) values ($1, $2, 'management', $3) returning id",
+    [`ci-owner-org-${rand()}`, "CI Owner Org", owner.userId],
+  );
+  ownerOrgId = ownerOrg.rows[0].id;
+  await pool.query(
+    "insert into memberships (user_id, org_id, role, status) values ($1, $2, 'owner', 'active')",
+    [owner.userId, ownerOrgId],
+  );
   const booker = await pool.query(
     "insert into booker_profiles (slug, display_name, owner_user_id, role_title, home_market) values ($1, $2, $3, $4, $5) returning id",
     [`ci-booker-${rand()}`, "CI Test Booker", other.userId, "Talent buyer", "Test Market"],
@@ -66,11 +75,25 @@ before(async () => {
     [bookerProfileId, slug, "CI Test Event", "Test Market", "A structured pitch for the test artist."],
   );
   bookingRequestId = request.rows[0].id;
+  const acceptedRequest = await pool.query(
+    "insert into booking_requests (booker_profile_id, artist_id, status, event_name, event_type, market, pitch) select $1, id, 'accepted', $3, 'show', $4, $5 from artist_profiles where slug = $2 returning id",
+    [bookerProfileId, slug, "CI Accepted Event", "Test Market", "An already accepted pitch for the test artist."],
+  );
+  acceptedRequestId = acceptedRequest.rows[0].id;
+  const draftRequest = await pool.query(
+    "insert into booking_requests (booker_profile_id, artist_id, status, event_name, event_type, market, pitch) select $1, id, 'draft', $3, 'show', $4, $5 from artist_profiles where slug = $2 returning id",
+    [bookerProfileId, slug, "CI Draft Event", "Test Market", "A private unsent draft pitch."],
+  );
+  draftRequestId = draftRequest.rows[0].id;
 });
 
 after(async () => {
+  if (draftRequestId) await pool.query("delete from booking_requests where id = $1", [draftRequestId]);
+  if (acceptedRequestId) await pool.query("delete from booking_requests where id = $1", [acceptedRequestId]);
   if (bookingRequestId) await pool.query("delete from booking_requests where id = $1", [bookingRequestId]);
   if (bookerProfileId) await pool.query("delete from booker_profiles where id = $1", [bookerProfileId]);
+  if (ownerOrgId) await pool.query("delete from memberships where org_id = $1", [ownerOrgId]);
+  if (ownerOrgId) await pool.query("delete from orgs where id = $1", [ownerOrgId]);
   await pool.query("delete from artist_profiles where slug in ($1, $2, $3)", [slug, incompleteSlug, imageOnlySlug]);
   await pool.query("delete from \"user\" where email like '%@test.local'");
   await pool.end();
@@ -84,6 +107,26 @@ test("anonymous: creating a profile requires sign-in", async () => {
 test("anonymous: /account requires sign-in", async () => {
   const res = await visit("/account");
   assert.match(res.url, /\/sign-in/);
+});
+
+test("anonymous: /booking is a public booking entry surface", async () => {
+  const res = await visit("/booking");
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /Start booking setup/);
+  assert.match(body, /Browse artists/);
+  assert.doesNotMatch(body, /Open dashboard/);
+});
+
+test("anonymous: homepage points booking traffic to /booking", async () => {
+  const res = await visit("/");
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /<a[^>]*href="\/booking"[^>]*>Booking<\/a>/);
+  assert.doesNotMatch(body, /href="\/#bookers"/);
+  assert.match(body, />Booking</);
+  assert.doesNotMatch(body, /Bookers/);
+  assert.doesNotMatch(body, /Join as Booker/);
 });
 
 test("anonymous: a profile is publicly viewable", async () => {
@@ -174,4 +217,69 @@ test("signed-in user without booker profile is sent toward onboarding", async ()
   const res = await visit("/booker", owner.cookie);
   const body = await res.text();
   assert.match(body, /Create your booker profile first/);
+});
+
+test("booking entry: artist-team actor is not automatically made into a booker", async () => {
+  const before = await pool.query("select count(*)::int as count from booker_profiles where owner_user_id = $1", [owner.userId]);
+  const res = await visit("/booking", owner.cookie);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /No booking principal is active yet/);
+  assert.match(body, /CI Owner Org/);
+  assert.match(body, /Booking capability not assumed/);
+  assert.doesNotMatch(body, /Open dashboard/);
+  const after = await pool.query("select count(*)::int as count from booker_profiles where owner_user_id = $1", [owner.userId]);
+  assert.equal(after.rows[0].count, before.rows[0].count);
+});
+
+test("booking entry: existing booker can continue to operational workflow", async () => {
+  const res = await visit("/booking", other.cookie);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /CI Test Booker/);
+  assert.match(body, /Open dashboard/);
+  assert.match(body, /Create event brief/);
+  assert.match(body, /Browse artists/);
+});
+
+test("booker onboarding uses booking-principal language without cross-dashboard shortcuts", async () => {
+  const res = await visit("/onboarding?role=booker", owner.cookie);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /Set up your booking profile/);
+  assert.match(body, /Browse artists/);
+  assert.doesNotMatch(body, /Set up the demand side/);
+  assert.doesNotMatch(body, />Team dashboard</);
+});
+
+test("owner: a sent request exposes accept and decline controls", async () => {
+  const res = await visit("/team", owner.cookie);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /CI Test Event/);
+  assert.match(body, /Accept/);
+  assert.match(body, /Decline/);
+});
+
+test("owner: an accepted request shows as accepted, not as a pending control", async () => {
+  const res = await visit("/team", owner.cookie);
+  const body = await res.text();
+  assert.match(body, /CI Accepted Event/);
+  assert.match(body, /Accepted in principle/);
+});
+
+test("booker: dashboard reflects an accepted request", async () => {
+  const res = await visit("/booker", other.cookie);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /CI Accepted Event/);
+  assert.match(body, /accepted/i);
+});
+
+test("privacy: a booker's unsent draft never reaches the artist team queue", async () => {
+  const res = await visit("/team", owner.cookie);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.doesNotMatch(body, /CI Draft Event/);
+  assert.doesNotMatch(body, /A private unsent draft pitch/);
 });

@@ -30,7 +30,7 @@ export default async function Home() {
               Book the <span className="font-curated italic font-normal text-red-600 lowercase">rawest</span> artists.
             </h1>
             <p className="text-xl md:text-2xl opacity-60 max-w-2xl mx-auto mb-12 font-curated italic">
-              Direct access. No middleman. The alternative for those who actually make the music.
+              Direct access. The alternative for those who actually make the music.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -62,15 +62,16 @@ export default async function Home() {
         <HomeArtistExperience artists={artists} />
       </section>
 
-      <section className="relative z-10 py-32 px-6 max-w-7xl mx-auto border-t border-white/5">
+      <section className="relative z-10 py-32 px-6 max-w-7xl mx-auto border-t border-white/5" id="booking">
         <RevealOnScroll className="flex flex-col items-center text-center space-y-12">
-          <h2 className="text-6xl font-bold tracking-tighter uppercase">Bookers</h2>
+          <h2 className="text-6xl font-bold tracking-tighter uppercase">Booking</h2>
           <p className="text-lg opacity-60 max-w-xl mx-auto font-curated italic">
-            Verified Labels & Promoters providing direct rails for the next wave of live culture.
+            Event briefs, real artist teams, and request coordination built for the people
+            pushing live culture forward.
           </p>
           <div className="flex gap-4">
              <MagneticButton className="btn-raw px-8 py-4 text-sm uppercase tracking-widest font-bold">
-                <Link href="/sign-up?role=booker">Join as Booker</Link>
+                <Link href="/booking">Start booking</Link>
              </MagneticButton>
           </div>
         </RevealOnScroll>
