@@ -646,3 +646,27 @@ Implement a "Sonic Identity" feature where artist profiles can trigger an audio 
 
 ### Follow-Up
 - Browser QA surfaced a separate visual asset issue: `https://grainy-gradients.vercel.app/noise.svg` returns `404`. Replace the remote grain texture with a local asset or CSS-only texture so the visual layer is deterministic.
+
+## 2026-07-02 — Logo Home Scroll Fix
+
+### Context
+- The refresh restoration fix handled browser reloads, but clicking the `SHOWMAN` logo while already on `/` still left the page at the current scroll position because the Next.js same-route link did not trigger a new scroll.
+
+### Implemented
+- Added a client `HomeLogoLink` component for the header logo.
+- Kept `SiteHeader` as an async server component so auth/session rendering remains unchanged.
+- Same-page homepage clicks now prevent the no-op navigation and smoothly scroll to the top.
+- Modified clicks, non-left clicks, and clicks from other routes keep normal link behavior.
+
+### Verification
+- Typecheck passed (`cd web && npx tsc --noEmit`).
+- Lint passed with existing warnings only.
+- Playwright QA against `http://localhost:3000/`:
+  - scroll position before logo click: `1622`
+  - scroll position after logo click: `1`
+  - meaningful content visible: true
+  - framework overlay: false
+- Screenshot captured at `/tmp/showman-logo-scroll-top.png`.
+
+### Follow-Up
+- The same unrelated remote grain texture `404` remains and should be replaced with a local/CSS texture in a separate visual reliability pass.

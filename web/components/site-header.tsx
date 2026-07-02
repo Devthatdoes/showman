@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import HomeLogoLink from "@/components/home-logo-link";
 import SignOutButton from "@/components/sign-out-button";
 
 export default async function SiteHeader() {
@@ -10,9 +11,7 @@ export default async function SiteHeader() {
     <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-[rgba(13,13,13,0.7)] px-4 py-4 backdrop-blur-xl sm:px-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href="/" className="text-2xl font-black uppercase tracking-[-0.08em] text-[var(--showman-bone)]">
-            Showman
-          </Link>
+          <HomeLogoLink className="text-2xl font-black uppercase tracking-[-0.08em] text-[var(--showman-bone)]" />
           <Link href="/artists" className="hidden text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)] transition-colors hover:text-[var(--showman-orange)] sm:inline">
             Artists
           </Link>
