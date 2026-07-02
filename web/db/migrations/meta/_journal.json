@@ -50,6 +50,13 @@
       "when": 1782501952126,
       "tag": "0006_green_spyke",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783003236838,
+      "tag": "0007_brown_ghost_rider",
+      "breakpoints": true
     }
   ]
 }

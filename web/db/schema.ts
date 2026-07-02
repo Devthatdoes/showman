@@ -18,6 +18,7 @@ export const bookerProfileType = pgEnum("booker_profile_type", ["individual", "o
 export const bookingRequestStatus = pgEnum("booking_request_status", [
   "draft",
   "request_sent",
+  "accepted",
   "declined",
   "cancelled",
 ]);

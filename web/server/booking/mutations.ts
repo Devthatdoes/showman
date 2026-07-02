@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import {
+  artistProfiles,
   bookerEvents,
   bookingRequests,
   type BookerEvent,
@@ -7,6 +8,7 @@ import {
 } from "@/db/schema";
 import { getPublicArtistProfileBySlug } from "@/server/catalog/queries";
 import { recordEvent } from "@/server/events/mutations";
+import { canManageArtist } from "@/server/identity/authorize";
 import { getBookerProfileForUser } from "@/server/identity/queries";
 import { and, eq } from "drizzle-orm";
 
@@ -115,4 +117,59 @@ export async function createBookingRequestForUser(
   });
 
   return request;
+}
+
+/**
+ * The artist team responds to an inbound request. `accepted` is a deal-in-principle
+ * (doc 05): it is NOT the money-backed `confirmed`, which arrives with the payments
+ * increment (deposit captured, per doc 02 DepositCaptured -> Confirmed). Only the
+ * team that manages the artist may respond, and only a `request_sent` request can move.
+ */
+export async function respondToBookingRequest(
+  userId: string,
+  requestId: string,
+  decision: "accepted" | "declined",
+): Promise<BookingRequest> {
+  const [row] = await db
+    .select({
+      request: bookingRequests,
+      ownerUserId: artistProfiles.ownerUserId,
+      orgId: artistProfiles.orgId,
+    })
+    .from(bookingRequests)
+    .innerJoin(artistProfiles, eq(bookingRequests.artistId, artistProfiles.id))
+    .where(eq(bookingRequests.id, requestId))
+    .limit(1);
+
+  if (!row) throw new Error("Booking request not found");
+
+  const canManage = await canManageArtist(userId, {
+    ownerUserId: row.ownerUserId,
+    orgId: row.orgId,
+  });
+  if (!canManage) throw new Error("Not authorized to respond to this request");
+
+  if (row.request.status !== "request_sent") {
+    throw new Error("Only a sent request can be accepted or declined");
+  }
+
+  const [updated] = await db
+    .update(bookingRequests)
+    .set({ status: decision, updatedAt: new Date() })
+    .where(eq(bookingRequests.id, requestId))
+    .returning();
+
+  await recordEvent({
+    actorUserId: userId,
+    principalType: "artist_profile",
+    principalId: updated.artistId,
+    role: "team",
+    action: decision === "accepted" ? "booking_request.accepted" : "booking_request.declined",
+    correlationId: updated.id,
+    beforeStatus: "request_sent",
+    afterStatus: decision,
+    payload: { eventName: updated.eventName, bookerProfileId: updated.bookerProfileId },
+  });
+
+  return updated;
 }

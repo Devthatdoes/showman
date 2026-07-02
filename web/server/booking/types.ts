@@ -3,6 +3,7 @@ import type { BookerEvent, BookerProfile, BookingRequest } from "@/db/schema";
 export type RequestStatusBucket = {
   draft: number;
   request_sent: number;
+  accepted: number;
   declined: number;
   cancelled: number;
 };
@@ -29,5 +30,5 @@ export type BookerDashboardData = {
 };
 
 export function emptyStatusCounts(): RequestStatusBucket {
-  return { draft: 0, request_sent: 0, declined: 0, cancelled: 0 };
+  return { draft: 0, request_sent: 0, accepted: 0, declined: 0, cancelled: 0 };
 }
