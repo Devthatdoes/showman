@@ -11,7 +11,7 @@
 .env.*
 !.env.example
 /docs/
-init-jot
+/init-jot
 
 # design-sync (staged scripts, build output, machine state — durable inputs under .design-sync/ are committed)
 /.ds-sync/
