@@ -2,7 +2,11 @@ import { db } from "@/db";
 import { artistProfiles, bookerEvents, bookerProfiles, bookingRequests } from "@/db/schema";
 import { getBookerProfileForUser } from "@/server/identity/queries";
 import { listManageableArtistProfiles } from "@/server/identity/authorize";
-import { desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
+
+// A booker's `draft` is private, unsent intent; `cancelled` is withdrawn. The artist
+// team only ever sees requests that were actually sent, plus their own responses.
+const TEAM_VISIBLE_STATUSES = ["request_sent", "accepted", "declined"] as const;
 import type {
   BookerDashboardData,
   BookerRequestListItem,
@@ -63,7 +67,12 @@ export async function listInboundRequestsForArtistTeam(userId: string): Promise<
     .from(bookingRequests)
     .innerJoin(artistProfiles, eq(bookingRequests.artistId, artistProfiles.id))
     .innerJoin(bookerProfiles, eq(bookingRequests.bookerProfileId, bookerProfiles.id))
-    .where(inArray(bookingRequests.artistId, artistIds))
+    .where(
+      and(
+        inArray(bookingRequests.artistId, artistIds),
+        inArray(bookingRequests.status, TEAM_VISIBLE_STATUSES),
+      ),
+    )
     .orderBy(desc(bookingRequests.createdAt));
 
   return rows.map((row) => ({
