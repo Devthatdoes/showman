@@ -37,8 +37,8 @@ export default async function Home() {
               <MagneticButton className="btn-raw px-12 py-5 text-lg uppercase tracking-widest font-bold">
                 <Link href="#artists">Explore Gallery</Link>
               </MagneticButton>
-              <Link 
-                href="auth.html" 
+              <Link
+                href="/sign-up"
                 className="text-sm uppercase tracking-widest font-bold opacity-50 hover:opacity-100 transition-all underline underline-offset-8"
               >
                 Create a Profile

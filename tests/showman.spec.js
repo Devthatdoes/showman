@@ -1,15 +1,17 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
 
-test('landing routes discovery intent to the artist directory', async ({ page }, testInfo) => {
+test('landing surfaces the artist gallery as its discovery entry point', async ({ page }, testInfo) => {
   await page.goto('/');
 
   await expect(page.getByRole('heading', { name: /book the rawest artists/i })).toBeVisible();
-  await expect(page.getByRole('link', { name: /^artists$/i })).toHaveAttribute('href', '/artists');
 
-  await page.getByRole('searchbox', { name: /search artists/i }).fill('rage');
-  await page.getByRole('button', { name: /^search$/i }).click();
-  await expect(page).toHaveURL(/\/artists\?q=rage/);
+  // The redesigned landing routes discovery into the on-page artist gallery
+  // (the search-driven directory flow is covered by the /artists test below).
+  const exploreGallery = page.locator('a[href="#artists"]');
+  await expect(exploreGallery).toBeVisible();
+  await expect(exploreGallery).toHaveText(/explore gallery/i);
+  await expect(page.locator('#artists')).toBeAttached();
 
   await page.screenshot({
     path: `test-results/showman-landing-${testInfo.project.name}.png`,
