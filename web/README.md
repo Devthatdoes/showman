@@ -20,6 +20,40 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 The app uses local system font stacks in `app/globals.css` so local and CI builds do not depend on remote font fetches.
 
+## Local Environment
+
+Copy `.env.example` to `.env` and keep `BETTER_AUTH_TRUSTED_ORIGINS` aligned with the port you are previewing. Local development allows `localhost:3000` through `localhost:3005` so the app does not reject auth requests when the preview server moves ports.
+
+Artist image uploads currently use `ARTIST_MEDIA_STORAGE=local`, which writes development files to `web/public/uploads/artists`. That is not a production storage strategy; production needs a durable object-storage adapter behind the same catalog media boundary.
+
+## Database and Workflow Foundation
+
+Run migrations against Postgres before loading the app:
+
+```bash
+npm run migrate
+```
+
+The current schema includes Better Auth tables, `artist_profiles`, manual `availability_windows`, and the first workflow foundation tables:
+
+- `orgs` and `memberships` for the actor/principal model.
+- `booker_profiles` for the demand-side dossier.
+- `booker_events` for booker coordination around a specific show or event.
+- `booking_requests` for structured request/pitch records.
+- `events` for append-only audit records.
+
+This is still pre-transaction infrastructure. There is no live escrow, e-sign, offer/counter-offer chain, hold promotion, confirmation artifact, payment capture, payout, dispute flow, or production verification rail yet. Those later systems should attach to the workflow spine rather than bypass it.
+
+## Verification
+
+```bash
+npx tsc --noEmit
+npm run lint
+npm test
+```
+
+`npm test` expects a running app and a reachable `DATABASE_URL` because the gate tests exercise the real auth and artist routes. Browser-facing changes should also be checked with Playwright from the repository root when the local browser environment is available.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

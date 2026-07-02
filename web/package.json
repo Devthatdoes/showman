@@ -7,12 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "migrate": "tsx db/migrate.ts",
     "test": "node --test tests/gates.test.mjs"
   },
   "dependencies": {
     "better-auth": "^1.6.20",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
+    "framer-motion": "^12.42.0",
     "next": "16.2.9",
     "pg": "^8.22.0",
     "react": "19.2.4",

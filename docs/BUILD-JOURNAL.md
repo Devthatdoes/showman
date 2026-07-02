@@ -175,7 +175,7 @@ Persistent notes for the design and build process. Each entry should capture the
 - Landing page needs actual scroll depth, scene energy, examples, movement, and a less suffocated feel.
 - Public artist surfaces should not expose real artist profile details, availability, booking details, or location/market data to anonymous visitors.
 - The `~/incubator/ui-testing` prototype at `http://localhost:8000/` remains an important vibe reference: fluid cursor/background energy, grain, reveal motion, breathing room, and a search-as-entry utility.
-- Temporary development artist examples may use ASAP Rocky, Fakemink, and PinkPantheress imagery in that order, but this must be clearly treated as development-only placeholder content and never production launch material.
+- Temporary development visual examples must use generic labels and must never render real artist names, booking details, or celebrity-likeness references in production launch material.
 
 ### Debugging
 
@@ -219,9 +219,352 @@ Persistent notes for the design and build process. Each entry should capture the
 - Playwright availability flow passed on port `3002`: sign up, seed owned test artist, open availability management, click a date range, select `New York, NY`, select travel terms, submit, and confirm the window appears.
 - Playwright screenshots captured desktop before/after and mobile at `/tmp/showman-availability-repair`.
 
+## 2026-06-26 — Landing brief reset implementation plan
+
+### Decision
+
+- User approved the landing brief reset direction.
+- Implementation will start with a frontend-only landing reset rather than backend/API expansion.
+- The page will center a living booking brief, privacy-safe scene teasers, the Describe the Gig -> Match real teams -> Request a window spine, two audience doors, and concrete trust promises.
+
+### Planned Shape
+
+- Central product moment: a living booking brief that turns a rough gig ask into structured terms.
+- Scroll depth: privacy-safe scene strip, Describe the Gig -> Match real teams -> Request a window workflow, two audience doors, and a concrete trust section.
+- Visual direction: sharper orange signal over obsidian/bone surfaces, fewer decorative boxes, more editorial scale and motion.
+- Created `docs/superpowers/plans/2026-06-26-landing-brief-reset.md` as the execution plan for the next build slice.
+
+### Build Update
+
+- Added the living booking brief hero component: editable prompt text, pointer-driven orange light, resolving chips, scoped landing CSS, reduced-motion behavior, and typecheck verification (`cd web && npx tsc --noEmit` passed).
+
+## 2026-06-26 — Landing brief reset implementation
+
+### Implemented
+
+- Replaced the generic split hero with a living booking brief and privacy-safe CTAs.
+- Added scroll depth with scene teasers, product workflow, two audience doors, and trust promises.
+- Kept development artist references as placeholder-only copy/visual blocks instead of remote likeness assets.
+- Review follow-up removed specific sample booking terms and real artist-name placeholders from rendered public landing content.
+- Screenshot follow-up tightened the living brief text sizing and scene-card heading scale so desktop and mobile renders breathe better.
+
+### Verification
+
+- Typecheck: passed (`cd web && npx tsc --noEmit`).
+- Lint: passed (`cd web && npm run lint`).
+- Production build: sandbox/environment blocked (`cd web && npm run build` failed because Turbopack attempted to create a local process and bind an internal port: `Operation not permitted (os error 1)`; escalated rerun was rejected by the approval layer).
+- Playwright desktop/mobile screenshots: not run per controller instruction not to start long-lived dev servers; rendered Playwright QA remains with the controller after commit.
+
+### Remaining
+
+- Replace placeholder visual blocks with user-supplied local development images or approved real launch artists.
+
+## 2026-06-26 — Platform foundation recovery plan
+
+### Context
+
+- User called out that the app had become a whackamole loop: each fix introduced another regression, the current UI did not match `ui-testing/showman-v2`, browser QA was not being used consistently, and core foundation docs were being ignored.
+- Severe issues to recover from include invalid auth origins, migration/schema drift, public/private artist-data leakage risk, local-only media uploads, unusable blank artist profiles, weak `/artists` route architecture, and generic/vibecoded public UI.
+- The product direction remains: creative-first, verified/direct booking infrastructure, real artist media, public discovery separated from private booking data, and future API/mobile readiness through server-side module boundaries.
+
+### Decision
+
+- Stop implementation churn and create a stabilization-first plan before more code changes.
+- Treat `ui-testing/showman-v2` as the UI baseline for the next public-surface rebuild, with orange replacing the prototype red.
+- Treat media as a first-class artist-profile requirement, not a cosmetic optional field.
+- Keep landing as a front door and route full artist browsing/search to `/artists`.
+
+### Artifact
+
+- Created `docs/plans/2026-06-26-001-platform-foundation-recovery.md`.
+
+### Next Execution Shape
+
+- Execute the plan in order: migration/schema reconciliation, media/profile contract, public vs owner catalog projections, route architecture, prototype-baseline UI rebuild, creation/edit UX, auth/onboarding intent, availability/location follow-through, and Playwright/browser QA.
+- Future turns should update this build journal after work lands and should include browser evidence or a clear blocker note.
+
+## 2026-06-26 — Platform foundation recovery implementation
+
+### Implemented
+
+- Added public catalog projections so landing and `/artists` use public-ready artist rows with explicit public columns and required hero images.
+- Hid incomplete image-less artist profiles from anonymous public routes while keeping owner repair access available.
+- Gated public artist pages so availability windows and routing notes are only queried/rendered for the owner.
+- Added migration metadata for the artist media fields and a new server-owned `onboarding_intent` user field.
+- Made artist media storage fail closed in production unless durable storage is configured; local upload remains development-only.
+- Added local media cleanup for failed inserts, image replacement, and profile deletion.
+- Split sign-up into a server page plus client form so artist/booker intent is initialized without hydration/lint issues.
+- Persisted onboarding intent server-side after sign-up and made account copy read from stored user state instead of trusting query parameters.
+- Pointed Request Access at the booker lane with the selected artist preserved.
+- Replaced the Playwright scaffold with Showman route coverage and desktop/mobile screenshot capture, plus a CI workflow with Postgres and migrations.
+
+### Verification
+
+- Typecheck passed (`cd web && npx tsc --noEmit`).
+- Lint passed (`cd web && npm run lint`) with only existing `<img>` performance warnings.
+- Gate tests could not run from the sandbox because local server/DB fetches are not reachable from the tool environment.
+- Production build remains blocked by the known Turbopack sandbox limitation: it tries to create a process and bind an internal port, then fails with `Operation not permitted`; escalation was rejected by the approval layer.
+
+### Review Follow-Up
+
+- Code-review agents found and fixes were applied for production local-media risk, public projection boundary, local media lifecycle cleanup, sign-up lint/runtime risk, Playwright scaffold coverage, persisted onboarding intent, and incorrect Request Access routing.
+- Remaining residual: upload validation errors still throw through server actions instead of returning inline form state. This should be addressed with `useActionState` form handling before launch-quality profile creation.
+- Redesign public artist access so anonymous visitors cannot view sensitive profile/availability data.
+
+### Guardrails
+
+- Public landing content must not expose real artist booking details.
+- Development artist examples are placeholder-only and must be replaced before production launch.
+- Build verification must include typecheck, lint, production build, and Playwright desktop/mobile screenshot QA.
+- Landing samples and parser chips must stay non-specific: no public city, exact date, fee, travel requirement, booking term, real artist name, or celebrity-likeness reference should render in placeholder content.
+
 ### Follow-Ups
 
 - Existing gate tests still assert anonymous users can view full artist profiles; this needs to change when public/private artist access is redesigned.
 - The new artist form did not reliably redirect in one headless browser attempt; investigate during the profile customization pass.
 - Design a real structured location model before relying on location search/matching in production.
 - Full landing page and public artist directory still need the Living Raw Gallery redesign pass.
+
+## 2026-06-26 — Testing UI baseline reset
+
+### Decision
+
+- User rejected the previous landing page as generic/slop and asked to start from the `ui-testing/showman-v2` baseline instead.
+- Reset the homepage direction to the testing UI's base structure: fluid cursor background, grain, centered raw hero, search utility, image-led artist cards, booker marquee, and two-audience close.
+- Changed the accent from red to orange.
+
+### Guardrails
+
+- This is a quick baseline adaptation for visual review, not a full product architecture pass.
+- Keep private booking details off public surfaces.
+- Do not continue polishing the rejected landing direction.
+
+## 2026-06-26 — Testing UI literalization pass
+
+### Decision
+
+- User clarified the goal is not another redesign: make the homepage almost exactly like `ui-testing/showman-v2`, with orange replacing red, so platform work can move forward.
+- Removed the extra landing close section and kept the page to the testing UI's core surfaces: hero/search, artist cards, and booker marquee.
+- Removed the hero kicker, restored testing-style artist/booker labels, aligned the nav sign-in pill to the reference, and changed reveal behavior to intersection-based visibility instead of one-shot load animation.
+
+### Guardrails
+
+- Keep this as a simple baseline, not the final visual identity.
+- Do not spend another long cycle polishing the homepage before moving into the actual platform pages.
+- Preserve privacy: public sample artist cards are previews only and should not expose booking details, availability, fees, contacts, or location constraints.
+
+## 2026-06-26 — Artist media and live homepage data foundation
+
+### User Feedback
+
+- Artist media is not optional polish; the product is creative-first and artist profiles must be created with an image that can display across the app.
+- Homepage artist cards should not be hardcoded showcases. They need to flow from real artist profiles already on the platform.
+- Genre logic needs both a broad booking category and specific scene/sound tags so search, dropdowns, and filtering can work without flattening artist identity.
+- Fake booker profile cards create product confusion until booker onboarding and verification exist.
+
+### Implemented
+
+- Added artist profile schema and migration fields for uploaded image URL and broad primary genre.
+- Added a server-side artist image upload flow that validates image type/size and stores files under `web/public/uploads/artists`.
+- Updated artist create/edit forms to include required artist image, broad genre select, and specific sounds input.
+- Updated public artist directory and profile pages to render the saved artist image.
+- Replaced hardcoded homepage artist data with real artist profile data and an in-page artist preview/filter experience.
+- Replaced fake booker cards with an honest booker onboarding lane placeholder until a real booker model exists.
+
+### Guardrails
+
+- Uploaded media is ignored by git and is suitable for local/dev storage only; production needs a durable object storage plan.
+- The migration file was created but could not be applied in this session because the environment rejected the database migration command escalation.
+- Homepage previews must remain booking-safe: no public fees, contact details, availability windows, or private terms.
+- Existing profiles without images are legacy-incomplete and should be updated through edit profile.
+
+### Runtime Repair
+
+- The homepage initially crashed because the app schema selected `image_url` and `primary_genre` before the local database had those columns.
+- Direct migration from the tool sandbox was blocked first by `tsx` IPC restrictions and then by denied access to local Postgres.
+- Added an idempotent artist-profile schema guard that runs before artist profile reads/writes and applies the same additive columns with `ADD COLUMN IF NOT EXISTS`.
+- Dev server logs returned to `/` 200 responses after hot reload.
+
+### Code Review Containment
+
+- Code review found the runtime schema guard was unsafe because it could create columns before the official migration ran, causing duplicate-column migration failure later.
+- Removed runtime DDL and made `0004_artist_profile_media.sql` idempotent with `ADD COLUMN IF NOT EXISTS`.
+- Restored the header `Artists` link to the real `/artists` directory instead of anchoring to the landing page section.
+- Added local trusted origins through port `3005`, including the active `3004` dev server, to fix local Better Auth invalid-origin failures.
+- Gated artist availability display to owners only on public profile pages.
+- Reordered artist profile validation so required text/category fields are checked before image files are written.
+
+## 2026-06-25 — PPTX wireframe read
+
+### Artifact
+
+- Reviewed `Showman_Wireframes.pptx`, a one-slide IA/flow wireframe map.
+- The deck compares five possible product spines and three landing entry treatments.
+
+### Wireframe Directions
+
+- **A · The Deal Pipeline**: shared booking pipeline for managers, bookers, and artists. Best when the core value is replacing messy email threads with a clean source of truth.
+- **B · Swipe the Scene**: discovery-first artist feed with quick-book sheet. Best when taste, momentum, and culture-native browsing are the primary magic.
+- **C · Book the Window**: calendar-first availability and request flow. Best when the pain is scheduling chaos across artists, travel, holds, and open windows.
+- **D · Roster HQ**: manager/org workspace where independent artists are an org of one. Best as a durable operating model for artists, managers, teams, and future RBAC.
+- **E · Describe the Gig**: plain-language booking brief parsed into structured terms, ranked matches, and a shared offer object. Most novel and closest to a differentiated booking workflow.
+- **F · Landing variants**: search-first, live-scene proof/momentum, and two-door entry for bookers vs. artists/teams.
+
+### Product Read
+
+- Current implementation has mostly been moving along **C** because availability was the immediate broken workflow.
+- The strongest longer-term architecture likely combines **E + D + C**: a brief bar creates structured booking intent, the org/roster workspace owns operations, and calendar windows/holds become the scheduling substrate.
+- **B** remains valuable for the public/creative feel, especially landing and discovery, but should not expose sensitive artist details to anonymous visitors.
+- Wireframe copy includes some "no middleman" language; keep the structure, but adapt voice to the previously approved position: real artists, real teams, direct booking infrastructure, not anti-manager framing.
+
+## 2026-06-26 — Landing page taste reset spec
+
+### Decision
+
+- User approved **Option 3: Product Spine Reset** and asked to start with the landing page.
+- The landing page should become the first expression of the future **Describe the Gig + Roster HQ + Book the Window** product spine, not a standalone marketing hero.
+
+### Design Direction
+
+- Signature interaction: a living booking brief that visually resolves plain-language gig intent into structured terms.
+- Public surface should carry scene energy and dev-only examples without exposing real artist booking details.
+- Landing composition should move away from split dark-SaaS hero/card patterns and toward a more spatial, music-native, motion-led front door.
+- Orange remains the signal color, but should act like live infrastructure/status rather than a blanket theme.
+
+### Artifact
+
+- Added spec: `docs/superpowers/specs/2026-06-26-landing-brief-reset-design.md`.
+
+### Implementation Boundary
+
+- Next pass should focus on `/` plus landing-specific components/data only.
+- Do not add production celebrity likenesses, database tables, paid assets, or public booking APIs in this pass.
+- Public/private artist access remains a follow-up, but the landing reset must not introduce new detail leaks.
+
+## 2026-06-26 — Onboarding and booking workflow foundation
+
+### Context
+
+- User asked to step back from UI polish and start building the next functional foundation: real onboarding, booker value, artist/team coordination, database clarity, and production-readiness understanding.
+- Created plan: `docs/plans/2026-06-26-002-feat-onboarding-booking-workflow-plan.md`.
+- The app remains a modular monolith and is still pre-escrow/pre-contract; this pass should create the workflow spine, not pretend the full booking transaction exists.
+
+### Implemented
+
+- Added workflow schema for `orgs`, `memberships`, `booker_profiles`, `booker_events`, `booking_requests`, and append-only `events`.
+- Added phase-0 identity services for personal org creation, owner membership, booker profile creation, actor workspace reads, and artist-management authorization.
+- Added booking services for booker dashboards, event briefs, request creation, and artist-team inbound queues.
+- Added `/onboarding`, `/booker`, `/booker/events/new`, `/booker/requests/new`, and `/team` routes.
+- Wired request-access CTAs from landing/public artist profile into the real request form.
+- Fixed the homepage artist preview modal so background page content cannot scroll over the preview.
+- Updated `web/README.md` with local database/workflow setup and production-readiness boundaries.
+
+### Guardrails
+
+- `BookingRequest` is only a structured request/pitch record in this pass. Offers, holds, agreements, escrow, e-sign, confirmations, payments, payouts, disputes, and integrations remain deferred.
+- `Org`/`Membership` exists now, but only owner/agent-style phase-0 authorization is active. Full RBAC matrix enforcement still needs a dedicated pass.
+- Booker profiles are dossiers for workflow and trust-sizing, not verified/KYB-backed claims yet.
+- Dashboard data is live database-backed; empty states are acceptable, hardcoded showcase rows are not.
+
+### Verification Notes
+
+- Typecheck passed after the first implementation pass.
+- Gate tests were extended for team inbound request visibility and booker dashboard visibility.
+- Playwright coverage was extended for the landing modal layering behavior when public artist cards exist in the local database.
+
+## 2026-06-26 — Sign-in failure debug
+
+### Problem
+
+- User reported the sign-in flow now keeps showing a failure state.
+- Two failure paths were identified: Better Auth rejects untrusted local dev origins before checking credentials, and `/account` had become coupled to the new workflow tables after login.
+
+### Fix
+
+- Updated Better Auth local development origins to trust `localhost` and `127.0.0.1` wildcard ports only outside production.
+- Cleared the local `.env` trusted-origin override so it does not narrow the trusted origins back to a stale short port list.
+- Reduced `/account` to an auth-session-only landing hub so a successful sign-in does not immediately depend on the new workflow migration.
+
+### Notes
+
+- The new `/team`, `/booker`, and onboarding workflow still require migration `0006_green_spyke.sql`.
+- `npm run migrate` is blocked inside the Codex sandbox by `tsx` IPC permissions, and the elevated attempt was rejected by the harness.
+- Verification run: Better Auth origin matcher accepts `http://localhost:*` and `http://127.0.0.1:*`; `npx tsc --noEmit` passes; `npm run lint` passes with the existing `<img>` warnings.
+
+### Follow-Up Verification
+
+- User confirmed the visible sign-in error still appeared after the code-side origin fix.
+- Local API probing showed `/api/auth/sign-in/email` and `/api/auth/sign-up/email` were returning `500`, while `/sign-in` rendered and `/api/auth/get-session` returned `200 null`.
+- Root cause was confirmed as local database schema drift: the app code expected `user.onboarding_intent` plus the new workflow tables, but the local database had not applied the latest migrations.
+- Ran `npm run migrate` successfully after terminal access approval.
+- Verified the local database now has `user.onboarding_intent`, `artist_profiles.org_id`, `orgs`, `memberships`, `booker_profiles`, and `booking_requests`.
+- Verified real Better Auth sign-up and sign-in requests against `http://localhost:3004` now return `200 OK` with session tokens.
+- Removed the temporary `debug-auth-probe*@test.local` verification account from the local database.
+
+## 2026-06-26 — Workspace/principal model recovery review
+
+### Context
+
+- User reported that a booker-only account still sees every dashboard option, including `Team dashboard`, and called out that this proves the app is not honoring the platform's basic artist/team vs booker/workspace logic.
+- User explicitly requested code review, ideation, and planning before more whack-a-mole implementation.
+- Subagent review and direct repo reading confirmed the foundation docs treat `User` as the actor and `Org` / `ArtistProfile` / `BookerProfile` as principals.
+
+### Artifacts
+
+- Added `docs/architecture/current-erd.md` with the current implemented database ERD and a drift map against the intended model.
+- Added `docs/reviews/2026-06-26-platform-model-review.md` with high-severity findings for account routing, account-level intent, personal-only booker profiles, and sign-up/onboarding coupling.
+- Added `docs/ideation/2026-06-26-platform-foundation-recovery-ideation.md` with ranked recovery directions.
+- Added `docs/plans/2026-06-26-003-refactor-workspace-principal-foundation-plan.md` as the next implementation plan.
+- Folded in the implementation review finding that private `draft` booking requests currently leak into artist-team inbound queues because the query does not filter to `request_sent`.
+
+### Verdict
+
+- The current workflow schema has useful pieces, but the app is still routing from signed-in user state and binary onboarding intent instead of actual principals/workspaces.
+- Next implementation should first hotfix draft visibility, then move to the account workspace selector and sign-up/onboarding model, then expand org-backed booker profiles and richer booker dossier fields.
+
+### Boundary
+
+- No product code was changed in this turn.
+- The purpose of this turn was to re-anchor the build in the domain model before changing routes, schema, or UI again.
+
+## 2026-06-26 — Account Workspace Selector Implementation
+### Implemented
+- Refactored `/app/account/page.tsx` to replace unconditional dashboard links with a dynamic workspace selector.
+- Integrated `getActorWorkspace` to render actual Org memberships and Booker Profiles from the database.
+- Added conditional "Setup" paths for missing capabilities, ensuring users are routed to onboarding only when necessary.
+- Removed binary "side" selection from the account view, aligning with the Actor/Principal domain model.
+
+### Verification
+- Fixed a core architectural regression where booker-only accounts were pushed toward team dashboards.
+- Verified that dual-capability users now see both their Orgs and their Booker Profile as distinct workspaces.
+
+## 2026-06-26 — The "Living Gallery" Implementation
+### Goal
+Transition the web application from a functional "SaaS skeleton" to a high-end, organic digital experience. The focus is on "Experience Design" rather than "UI Design," prioritizing motion, asymmetry, and a raw, music-native energy.
+
+### Tech Stack Addition
+- `framer-motion`: Integrated for spring physics, shared element transitions, and kinetic layouts.
+- Variable Fonts: Shifted toward dynamic weight/slant shifts for "breathing" typography.
+
+### Implementation Plan
+1. **Visual Foundation**: Implement a global grain overlay and a fluid, cursor-responsive background.
+2. **Organic Layouts**: Replace rigid grids with asymmetric, non-linear "Discovery Streams."
+3. **Kinetic Interactions**: Add magnetic buttons, spring-loaded reveals, and kinetic typography.
+4. **Spatial Navigation**: Replace the static top-nav with a floating, contextual navigation pill.
+5. **Seamless Transitions**: Implement shared element transitions for artist profiles to remove "hard" page loads.
+6. **Professional Booking**: Refine the booking request flow into a a la carte, guided concierge experience.
+
+## 2026-06-28 — Local Dev Server Restart
+
+### Operational Note
+- Restarted the Next.js dev server for the web app on `http://localhost:3004`.
+- Stopped the previous `next dev -p 3004` / `next-server` processes that were holding port 3004.
+- Started a fresh `npm run dev -- -p 3004` session from `web/`.
+
+### Verification
+- Confirmed `GET /` returns `HTTP/1.1 200 OK`.
+- Confirmed port `3004` is held by the fresh `next-server` process.
+- Checked host memory after restart: `15Gi` total, `7.3Gi` used, `8.2Gi` available, `1.1Gi` swap used.
+
+### Follow-Up
+- Continue watching the dev server memory footprint because previous runs have shown runaway Next/Turbopack RSS growth.

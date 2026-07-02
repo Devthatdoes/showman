@@ -2,14 +2,18 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { getActorWorkspace } from "@/server/identity/queries";
 import SignOutButton from "@/components/sign-out-button";
 import { buttonStyles } from "@/components/ui/button";
 import { panelStyles } from "@/components/ui/panel";
-import { listArtistProfilesForOwner } from "@/server/catalog/queries";
 
 export const dynamic = "force-dynamic";
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ artist?: string }>;
+}) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
@@ -17,8 +21,10 @@ export default async function AccountPage() {
   }
 
   const { user } = session;
+  const { artist: requestedArtist } = await searchParams;
 
-  const profiles = await listArtistProfilesForOwner(user.id);
+  // Fetch actual workspaces instead of showing unconditional links
+  const workspace = await getActorWorkspace(user.id);
 
   return (
     <div className="min-h-screen">
@@ -31,8 +37,9 @@ export default async function AccountPage() {
             Your account
           </h1>
           <p className="max-w-2xl text-sm leading-6 text-[var(--showman-muted)]">
-            Your profiles are the supply-side base of showman: real artist identity,
-            visible availability, and clean ownership for the booking rails ahead.
+            {requestedArtist
+              ? "You are signed in. Finish onboarding to turn the selected artist into a structured booking request."
+              : "You are signed in. Choose the workspace that matches what you need to do next."}
           </p>
           <div className="flex flex-col gap-2">
             <p className="font-medium text-[var(--showman-bone)]">{user.name}</p>
@@ -44,51 +51,77 @@ export default async function AccountPage() {
             <Link href="/artists" className={buttonStyles("secondary")}>
               Browse artists
             </Link>
+            {/* Only show onboarding if they have no active workspace */}
+            {workspace.orgs.length === 0 && !workspace.bookerProfile && (
+              <Link href="/onboarding" className={buttonStyles("secondary")}>
+                Onboarding
+              </Link>
+            )}
           </div>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex items-end justify-between gap-4">
-            <h2 className="text-xl font-bold tracking-[-0.03em] text-[var(--showman-bone)]">
-              Your profiles
-            </h2>
-            <Link href="/artists/new" className={buttonStyles("primary")}>
-              Add profile
-            </Link>
-          </div>
-
-          {profiles.length === 0 ? (
-            <div className={`${panelStyles("subtle")} flex flex-col items-center gap-4 p-8 text-center`}>
-              <p className="text-sm leading-6 text-[var(--showman-muted)]">
-                You have not created any profiles yet.
+        <div className="grid gap-4 sm:grid-cols-2">
+          {/* Dynamic Org/Team Workspaces */}
+          {workspace.orgs.map((orgItem) => (
+            <Link 
+              key={orgItem.id} 
+              href={`/team?orgId=${orgItem.id}`} 
+              className={`${panelStyles("subtle")} block p-5 transition hover:border-[#ff8a2a]`}
+            >
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ffb06a]">
+                Artist / Team
               </p>
-              <Link href="/artists/new" className={buttonStyles("primary")}>
-                Add profile
-              </Link>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {profiles.map((p) => (
-                <div
-                  key={p.slug}
-                  className={`${panelStyles("subtle")} flex items-center justify-between gap-4 p-4 sm:p-5`}
-                >
-                  <Link href={`/artists/${p.slug}`} className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-[var(--showman-bone)]">
-                      {p.stageName}
-                    </span>
-                    {p.homeMarket && (
-                      <span className="block truncate text-xs text-[var(--showman-muted)]">
-                        {p.homeMarket}
-                      </span>
-                    )}
-                  </Link>
-                  <Link href={`/artists/${p.slug}/edit`} className={buttonStyles("secondary")}>
-                    Edit
-                  </Link>
-                </div>
-              ))}
-            </div>
+              <h2 className="mt-3 text-xl font-black uppercase tracking-[-0.04em] text-[var(--showman-bone)]">
+                {orgItem.name}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">
+                Manage profiles, readiness, and inbound requests for this roster.
+              </p>
+            </Link>
+          ))}
+
+
+          {/* Personal or Org-backed Booker Profile */}
+          {workspace.bookerProfile && (
+            <Link href="/booker" className={`${panelStyles("subtle")} block p-5 transition hover:border-[#ff8a2a]`}>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ffb06a]">
+                Booker
+              </p>
+              <h2 className="mt-3 text-xl font-black uppercase tracking-[-0.04em] text-[var(--showman-bone)]">
+                {workspace.bookerProfile.displayName}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">
+                Build requests, manage events, and coordinate booking context.
+              </p>
+            </Link>
+          )}
+
+          {/* Setup Options for missing lanes */}
+          {workspace.orgs.length === 0 && (
+            <Link href="/onboarding" className={`${panelStyles("subtle")} block p-5 border-dashed border-2 border-white/10 transition hover:border-[#ff8a2a]`}>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/40">
+                Setup
+              </p>
+              <h2 className="mt-3 text-xl font-black uppercase tracking-[-0.04em] text-[var(--showman-bone)]">
+                Create Artist Team
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">
+                Establish a professional roster to start managing artist bookings.
+              </p>
+            </Link>
+          )}
+          {!workspace.bookerProfile && (
+            <Link href="/onboarding" className={`${panelStyles("subtle")} block p-5 border-dashed border-2 border-white/10 transition hover:border-[#ff8a2a]`}>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/40">
+                Setup
+              </p>
+              <h2 className="mt-3 text-xl font-black uppercase tracking-[-0.04em] text-[var(--showman-bone)]">
+                Create Booker Profile
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-[var(--showman-muted)]">
+                Setup your professional identity to send booking requests.
+              </p>
+            </Link>
           )}
         </div>
       </div>

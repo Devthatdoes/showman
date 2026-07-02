@@ -1,55 +1,79 @@
+import FluidBackground from "@/components/landing/fluid-background";
+import RevealOnScroll from "@/components/landing/reveal-on-scroll";
+import HomeArtistExperience from "@/components/landing/home-artist-experience";
+import MagneticButton from "@/components/ui/magnetic-button";
+import { listPublicArtistProfiles } from "@/server/catalog/queries";
 import Link from "next/link";
-import { buttonStyles } from "@/components/ui/button";
-import { panelStyles } from "@/components/ui/panel";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const artistProfiles = await listPublicArtistProfiles({ limit: 6 });
+  const artists = artistProfiles.map((artist) => ({
+    slug: artist.slug,
+    stageName: artist.stageName,
+    bio: artist.bio,
+    imageUrl: artist.imageUrl,
+    primaryGenre: artist.primaryGenre,
+    genres: artist.genres,
+    homeMarket: artist.homeMarket,
+  }));
+
   return (
-    <main className="min-h-screen">
-      <section className="mx-auto grid min-h-[calc(100vh-65px)] max-w-6xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <div>
-          <p className="mb-5 text-xs font-bold uppercase tracking-[0.24em] text-[#ffb06a]">
-            Verified artist booking
-          </p>
-          <h1 className="max-w-4xl text-5xl font-black uppercase leading-[0.9] tracking-[-0.07em] text-[var(--showman-bone)] sm:text-7xl lg:text-8xl">
-            Booking rails for the next wave of live culture.
-          </h1>
-          <p className="mt-6 max-w-xl text-base leading-7 text-[var(--showman-muted)] sm:text-lg">
-            Real artists, authorized teams, visible availability, and direct booking
-            infrastructure for people pushing the needle and putting scenes on.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/artists" className={buttonStyles("primary")}>
-              Browse artists
-            </Link>
-            <Link href="/artists/new" className={buttonStyles("secondary")}>
-              Create artist profile
-            </Link>
-          </div>
-        </div>
-
-        <div className={`${panelStyles("elevated")} p-4 sm:p-5`}>
-          <div className="aspect-[4/5] rounded-2xl border border-[var(--showman-line)] bg-[radial-gradient(circle_at_70%_20%,rgba(255,122,26,0.34),transparent_32%),linear-gradient(145deg,#25211c,#0f0e0d)] p-5">
-            <div className="flex h-full flex-col justify-between">
-              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)]">
-                <span>artist profile</span>
-                <span className="text-[#ffb06a]">open dates</span>
-              </div>
-              <div>
-                <p className="text-4xl font-black uppercase leading-none tracking-[-0.06em]">
-                  Find the act.
-                  <br />
-                  Read the room.
-                  <br />
-                  Make it real.
-                </p>
-                <p className="mt-4 max-w-xs text-sm leading-6 text-[var(--showman-muted)]">
-                  Phase 0 is live with artist profiles and availability, setting the base
-                  for the booking rails that come after.
-                </p>
-              </div>
+    <main className="raw-home min-h-screen relative overflow-hidden">
+      <FluidBackground />
+      
+      <section className="relative z-10 min-h-screen flex flex-col justify-center items-center text-center px-6 pt-20">
+        <RevealOnScroll>
+          <div className="space-y-8">
+            <h1 className="text-7xl md:text-9xl font-bold tracking-tighter mb-6 leading-none uppercase">
+              Book the <span className="font-curated italic font-normal text-red-600 lowercase">rawest</span> artists.
+            </h1>
+            <p className="text-xl md:text-2xl opacity-60 max-w-2xl mx-auto mb-12 font-curated italic">
+              Direct access. No middleman. The alternative for those who actually make the music.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <MagneticButton className="btn-raw px-12 py-5 text-lg uppercase tracking-widest font-bold">
+                <Link href="#artists">Explore Gallery</Link>
+              </MagneticButton>
+              <Link
+                href="/sign-up"
+                className="text-sm uppercase tracking-widest font-bold opacity-50 hover:opacity-100 transition-all underline underline-offset-8"
+              >
+                Create a Profile
+              </Link>
             </div>
           </div>
-        </div>
+        </RevealOnScroll>
+      </section>
+
+      <section className="relative z-10 py-32 px-6 max-w-7xl mx-auto" id="artists">
+        <RevealOnScroll className="flex justify-between items-end mb-20">
+          <h2 className="text-6xl font-bold tracking-tighter uppercase">Artists</h2>
+          <div className="flex gap-6 text-xs uppercase font-bold opacity-50">
+            <span className="text-red-600 cursor-pointer">All</span>
+            <span className="hover:text-white cursor-pointer transition">Industrial</span>
+            <span className="hover:text-white cursor-pointer transition">Atmospheric</span>
+            <span className="hover:text-white cursor-pointer transition">Avant-Pop</span>
+          </div>
+        </RevealOnScroll>
+        
+        <HomeArtistExperience artists={artists} />
+      </section>
+
+      <section className="relative z-10 py-32 px-6 max-w-7xl mx-auto border-t border-white/5">
+        <RevealOnScroll className="flex flex-col items-center text-center space-y-12">
+          <h2 className="text-6xl font-bold tracking-tighter uppercase">Bookers</h2>
+          <p className="text-lg opacity-60 max-w-xl mx-auto font-curated italic">
+            Verified Labels & Promoters providing direct rails for the next wave of live culture.
+          </p>
+          <div className="flex gap-4">
+             <MagneticButton className="btn-raw px-8 py-4 text-sm uppercase tracking-widest font-bold">
+                <Link href="/sign-up?role=booker">Join as Booker</Link>
+             </MagneticButton>
+          </div>
+        </RevealOnScroll>
       </section>
     </main>
   );

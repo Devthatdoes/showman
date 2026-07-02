@@ -398,6 +398,21 @@ This is the front [`03`](./03-trust-verification.md) §1.3 (T12) and the bluepri
 - **Money endpoints are doubly guarded:** `authorize()` (role) + step-up/cool-down (`07` §5) + Stripe-side KYB gating (no payout to an unverified account, `03`/`04`) + idempotency (§5.2). Four independent gates protect every fund movement.
 - **The audit log is the security backstop.** Because every authorized action and every transition emits an immutable `Event` (I-2), post-incident forensics ("who did what, on whose behalf, under which role, when") is always answerable — the same property the dispute flow (`04`) relies on.
 
+### 7.6 Authentication & session hardening (self-hosted email/password + sessions)
+
+Authentication (**who you are**) is distinct from authorization (**what you may do**, §7.1). This section governs the authN layer: how credentials are stored, how a login becomes a session, and the production posture that layer must reach before launch. The stack is a self-hosted email/password + server-side session model (Better Auth), with the `user` / `account` / `session` / `verification` tables owned by the `identity` context; OAuth providers attach as additional `account` rows without changing this posture.
+
+- **Passwords are hashed, never stored or encrypted.** Credentials live only as a **salted, slow (bcrypt/scrypt/argon2) hash** in `account.password`. Hashing is one-way: a database leak yields hashes, not passwords, and salting + slow-hashing make offline cracking impractical. showman never implements its own hashing — this is delegated to the auth library. (Identity lives on `user`; credentials on `account`, so one principal can hold multiple sign-in methods.)
+- **Sessions are server-side; the cookie is only a claim token.** The authoritative session is a `session` row (token, `expiresAt`, `userId`); the browser holds a cookie carrying the **token, not the session data**. This is what makes logins **revocable** — deleting the row kills the session immediately, independent of cookie expiry (enables sign-out and "sign out all devices").
+- **Session cookies are hardened.** `HttpOnly` (unreadable by client JS, defeats XSS token theft), `Secure` (HTTPS-only), and `SameSite` (CSRF defense) are required in production. These complement the trusted-origin check below.
+- **TLS everywhere for the app tier, not just the PII flows (§7.3).** Session cookies traverse the network on every request; without HTTPS end-to-end the claim token is sniffable and impersonation is trivial. HTTPS is a launch gate, not an enhancement.
+- **The auth signing secret is a managed secret.** The session/cookie signing+encryption secret follows §7.2 (secrets manager, injected as runtime env, never committed). A leaked secret means forgeable sessions; it is rotatable on the same basis as other keys.
+- **Trusted-origin / CSRF enforcement on auth POSTs.** Auth mutations require the request `Origin` to match the configured app origin(s), so the automatically-attached cookie cannot be weaponized by a third-party site. (This is also why non-browser callers — tests, future mobile — must send an explicit origin; mobile clients use token-based auth rather than browser cookies, see §2.)
+- **Email verification is a trust floor.** The `verification` table + `emailVerified` flag gate money-adjacent and listing actions; requiring a verified email raises the spam floor cheaply and dovetails with the graduated-trust throttles in §7.5 and [`03`](./03-trust-verification.md) §3.2.
+- **Auth endpoints are rate-limited** (sign-in guessing, sign-up spam) at the action boundary per §7.5 — the authN-side complement to the money-side caps.
+
+**Pre-launch authN gate (none are code-optional):** HTTPS enforced · real signing secret from the secrets manager · hardened cookie flags · DB encryption at rest for `user`/`account`/`session` (§7.3) · auth-endpoint rate limits · email verification enforced on money-adjacent actions.
+
 ---
 
 ## 8. How the architecture honors the spine (traceability)

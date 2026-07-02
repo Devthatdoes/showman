@@ -1,0 +1,6 @@
+{
+  "name": "showman-ds",
+  "version": "1.0.0",
+  "private": true,
+  "module": "./entry.js"
+}

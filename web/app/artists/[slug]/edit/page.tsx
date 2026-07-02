@@ -3,7 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import { updateArtistProfile, deleteArtistProfile } from "@/app/artists/actions";
 import { getArtistProfileBySlug } from "@/server/catalog/queries";
+import ArtistImageInput from "@/components/artist-image-input";
 import { buttonStyles } from "@/components/ui/button";
+import { PRIMARY_GENRE_OPTIONS } from "@/lib/artist-genres";
 import {
   fieldClassName,
   helpTextClassName,
@@ -22,6 +24,7 @@ export default async function EditArtistPage({ params }: { params: Promise<{ slu
 
   const user = await getCurrentUser();
   if (!user || user.id !== profile.ownerUserId) redirect(`/artists/${slug}`);
+  const specificGenres = profile.genres.filter((genre) => genre !== profile.primaryGenre);
 
   return (
     <main className="min-h-screen">
@@ -39,6 +42,8 @@ export default async function EditArtistPage({ params }: { params: Promise<{ slu
         <div className={`${panelStyles("elevated")} mt-8 p-6 sm:p-8`}>
           <form action={updateArtistProfile} className="flex flex-col gap-6">
             <input type="hidden" name="slug" value={profile.slug} />
+
+            <ArtistImageInput existingImageUrl={profile.imageUrl} />
 
             <div className="flex flex-col gap-2">
               <label htmlFor="stageName" className={labelClassName}>
@@ -70,16 +75,36 @@ export default async function EditArtistPage({ params }: { params: Promise<{ slu
             </div>
 
             <div className="flex flex-col gap-2">
+              <label htmlFor="primaryGenre" className={labelClassName}>
+                Broad genre <span className="text-[var(--showman-danger)]">*</span>
+              </label>
+              <select
+                id="primaryGenre"
+                name="primaryGenre"
+                required
+                defaultValue={profile.primaryGenre ?? ""}
+                className={fieldClassName}
+              >
+                <option value="">Choose the booking category</option>
+                {PRIMARY_GENRE_OPTIONS.map((genre) => (
+                  <option key={genre} value={genre}>
+                    {genre}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
               <label htmlFor="genres" className={labelClassName}>
-                Genres
+                Specific sounds
               </label>
               <input
                 id="genres"
                 name="genres"
                 type="text"
-                defaultValue={profile.genres.join(", ")}
+                defaultValue={specificGenres.join(", ")}
                 className={fieldClassName}
-                placeholder="house, techno, disco"
+                placeholder="Rage-Rap, Rage, Underground Rap"
               />
             </div>
 

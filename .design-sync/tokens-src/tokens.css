@@ -1,0 +1,51 @@
+/*
+ * Showman brand tokens + base surface treatment.
+ * Source of truth: web/app/globals.css (the :root token block and body styling).
+ * Tailwind-specific directives (the tailwindcss import and the theme-inline
+ * block) are intentionally omitted so this file ships standalone to
+ * claude.ai/design and designs built with Showman get the palette and
+ * surface treatment without a build step.
+ */
+
+:root {
+  /* Surfaces */
+  --background: #090908;
+  --foreground: #fff8ec;
+  --showman-carbon: #090908;
+  --showman-carbon-2: #11100e;
+  --showman-carbon-3: #1b1916;
+
+  /* Text */
+  --showman-bone: #fff8ec;
+  --showman-muted: #b8ad9d;
+
+  /* Lines / borders */
+  --showman-line: rgba(255, 248, 236, 0.12);
+
+  /* Brand accent */
+  --showman-orange: #ff7a1a;
+  --showman-orange-strong: #ff5f00;
+
+  /* Status */
+  --showman-danger: #ff5c7a;
+  --showman-success: #6ee7a8;
+}
+
+html {
+  background: var(--showman-carbon);
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 78% 0%, rgba(255, 122, 26, 0.18), transparent 34rem),
+    radial-gradient(circle at 8% 42%, rgba(255, 248, 236, 0.05), transparent 30rem),
+    var(--showman-carbon);
+  color: var(--showman-bone);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: rgba(255, 122, 26, 0.35);
+  color: var(--showman-bone);
+}
