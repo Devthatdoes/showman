@@ -2,12 +2,15 @@
 /.claude/
 /.superpowers/
 
+/.codex/
+
 # Safety nets (web/ has its own .gitignore for the app itself)
 **/node_modules/
 **/.next/
 .env
 .env.*
 !.env.example
+/docs/
 
 # design-sync (staged scripts, build output, machine state — durable inputs under .design-sync/ are committed)
 /.ds-sync/
