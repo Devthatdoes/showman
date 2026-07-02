@@ -568,3 +568,81 @@ Transition the web application from a functional "SaaS skeleton" to a high-end, 
 
 ### Follow-Up
 - Continue watching the dev server memory footprint because previous runs have shown runaway Next/Turbopack RSS growth.
+
+## 2026-07-02 — Booking response loop (accept / decline)
+
+### Context
+- Phase 0 had a one-directional loop: bookers could send structured requests, but the artist team could only view them in a read-only `/team` queue. No way to respond.
+- Increment chosen with the user: close the loop without money. `accepted` = deal in principle; the money-backed `confirmed` is deferred to the payments increment (doc 02 `DepositCaptured -> Confirmed`, doc 05 lifecycle).
+
+### Implemented
+- Schema: added `accepted` to the `booking_request_status` enum (migration `0007`). TypeScript surfaced every status consumer (`RequestStatusBucket` / `emptyStatusCounts`) that needed updating.
+- Service: `respondToBookingRequest(userId, requestId, decision)` authorizes via org-aware `canManageArtist`, allows only `request_sent -> accepted|declined`, and records an `Event`.
+- UI: Accept / Decline server actions on the `/team` inbound queue; both dashboards reflect the resulting status.
+
+### Bug fix folded in (P0 privacy)
+- `listInboundRequestsForArtistTeam` had no status filter, leaking bookers' private `draft` requests (pitch text included) into the team queue. Restricted the queue to sent requests and their responses, with a regression test.
+
+### Verification
+- 20/20 gate tests pass locally (typecheck clean, lint 0 errors), including three new behavior tests plus the draft-privacy regression.
+- Committed in three checkpoints (feat, fix, test) per the incremental-commit preference.
+
+### Process
+- Earlier this session: opened and merged PR #8 (landing reset + booker/booking layer), fixed its two CI failures (untyped mousemove handler; stale landing E2E rewritten to the redesigned discovery flow) plus a dead `auth.html` link, verified green, merged, confirmed on `main`, and pruned the branch.
+
+### Open questions / follow-ups (from an external review report, triaged, not yet actioned)
+- P1 rights exposure: `fully-test-demo-images/drake_img1.jpg` is committed to the now-PUBLIC repo (plus `Zone.Identifier` junk). Needs removal; git history retains it.
+- P1 positioning: "No middleman" copy is live on the landing (`page.tsx:33`), contradicting the aid-not-replace principle.
+- P0 authz drift: `/artists/[slug]/edit` and availability pages gate on raw `ownerUserId` instead of org-aware `canManageArtist`, locking out authorized org members.
+- P0 UX: deleting an artist that has booking requests hits an unguarded FK `restrict` (500).
+- P2: header shows Team/Booker links to all signed-in users; sign-up still forces a binary artist/booker side.
+
+## 2026-07-02 — Stabilization Sprint: Public Exposure Purge
+### Goal
+Immediate removal of high-risk public exposure items (celebrity likenesses and OS junk) and alignment of public landing copy with the "Aid-Not-Replace" professional positioning.
+
+### Changes
+- **Exposure Purge**: Deleted `fully-test-demo-images/drake_img1.jpg` and associated `Zone.Identifier` files across the repo. This removes celebrity likeness exposure from the working tree.
+- **Positioning Correction**: Updated `web/app/page.tsx` to remove the phrase "No middleman."
+    - **Reason**: The phrase contradicts the professional strategy of supporting managers/agents.
+    - **New Copy**: "Direct access. The alternative for those who actually make the music."
+
+### Findings
+- Found multiple `Zone.Identifier` files (Windows metadata) committed to the repo; purged these along with the celebrity images.
+- Confirmed that the landing page had reverted to a version containing "No middleman" despite previous design la-cuts.
+
+### Outcome
+- Public repository risk reduced.
+- Landing page copy now aligns with the la-professionally-minded "infrastructure" vision.
+
+## 2026-07-02 — Feature Ideation: Sonic Identity (Audio Previews)
+### Idea
+Implement a "Sonic Identity" feature where artist profiles can trigger an audio preview upon being clicked. 
+- **Mechanism**: Artists can provide a direct link to a specific Spotify/SoundCloud track, or the system can default to their most popular track via API.
+- **Experience**: The audio begins playing as the profile expands, creating an immediate emotional and sensory connection to the artist's work.
+- **Priority**: Low-to-Medium (Experience Enhancement). This will be implemented after the "Trust Layer" and "Coordination Engine" are stable.
+
+## 2026-07-02 — Refresh Scroll Restoration Fix
+
+### Context
+- Another agent started a `ScrollToTop` component to address the homepage refreshing at the user's previous scroll position instead of the top.
+- The session ended before the component was wired in, leaving an accidental `React/useEffect` import in the server homepage and the actual client component unmounted.
+
+### Implemented
+- Wired `ScrollToTop` into the root app layout so the behavior applies across the app shell, not just the homepage.
+- Moved the effect into the client component and removed the accidental homepage import.
+- Set browser `history.scrollRestoration` to `manual` during the client session and scrolls to top on first load only when there is no hash target, so `/#artists` style anchors remain respected.
+
+### Verification
+- Typecheck passed (`cd web && npx tsc --noEmit`).
+- Lint passed with existing warnings only.
+- Playwright QA against the already-running `http://localhost:3000/`:
+  - initial scroll position: `0`
+  - scrolled position before reload: `1622`
+  - scroll position after reload: `0`
+  - meaningful content visible: true
+  - framework overlay: false
+- Screenshot captured at `/tmp/showman-scroll-refresh-top.png`.
+
+### Follow-Up
+- Browser QA surfaced a separate visual asset issue: `https://grainy-gradients.vercel.app/noise.svg` returns `404`. Replace the remote grain texture with a local asset or CSS-only texture so the visual layer is deterministic.

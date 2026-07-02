@@ -30,7 +30,7 @@ export default async function Home() {
               Book the <span className="font-curated italic font-normal text-red-600 lowercase">rawest</span> artists.
             </h1>
             <p className="text-xl md:text-2xl opacity-60 max-w-2xl mx-auto mb-12 font-curated italic">
-              Direct access. No middleman. The alternative for those who actually make the music.
+              Direct access. The alternative for those who actually make the music.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
