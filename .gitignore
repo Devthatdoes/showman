@@ -19,6 +19,7 @@
 /.design-sync/.cache/
 /.design-sync/learnings/
 /.design-sync/node_modules
+/.design-sync/canvas/
 
 # OS
 .DS_Store
