@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { canManageArtist } from "@/server/identity/authorize";
 import { ensurePersonalOrgForUser } from "@/server/identity/mutations";
 import { getArtistProfileBySlug } from "./queries";
-import { parseArtistProfileFormData, parseArtistProfileTextFields, slugifyArtistName } from "./types";
+import { parseArtistProfileTextFields, slugifyArtistName } from "./types";
 import { deleteArtistImageUpload, saveArtistImageUpload } from "./uploads";
 
 export async function requireOwnedArtist(ownerUserId: string, slug: string): Promise<ArtistProfile> {
@@ -23,10 +23,7 @@ export async function createArtistProfileForUser(
   if (!parsed.primaryGenre) throw new Error("Broad genre is required");
 
   const imageUrl = await saveArtistImageUpload(formData, { required: true });
-  const { stageName, bio, primaryGenre, homeMarket, genres } = parseArtistProfileFormData(
-    formData,
-    imageUrl,
-  );
+  const { stageName, bio, primaryGenre, homeMarket, genres } = parsed;
 
   const base = slugifyArtistName(stageName);
   let slug = base;
@@ -66,10 +63,7 @@ export async function updateOwnedArtistProfile(
 
   const uploadedImageUrl = await saveArtistImageUpload(formData, { required: false });
   const imageUrl = uploadedImageUrl ?? profile.imageUrl;
-  const { stageName, bio, primaryGenre, homeMarket, genres } = parseArtistProfileFormData(
-    formData,
-    imageUrl,
-  );
+  const { stageName, bio, primaryGenre, homeMarket, genres } = parsed;
   if (!imageUrl) throw new Error("Artist image is required");
 
   try {

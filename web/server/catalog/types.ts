@@ -1,4 +1,5 @@
 import type { ArtistProfile, AvailabilityWindow } from "@/db/schema";
+import { slugify } from "@/lib/slugify";
 
 export type ArtistProfileFields = {
   stageName: string;
@@ -39,31 +40,7 @@ export type ArtistProfileSummary = Pick<
 export type ArtistAvailabilityWindow = AvailabilityWindow;
 
 export function slugifyArtistName(input: string): string {
-  return (
-    input
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 72) || "artist"
-  );
-}
-
-export function parseArtistProfileFormData(
-  formData: FormData,
-  imageUrl: string | null,
-): ArtistProfileFields {
-  const stageName = ((formData.get("stageName") as string | null) ?? "").trim();
-  const bio = ((formData.get("bio") as string | null) ?? "").trim() || null;
-  const primaryGenre = ((formData.get("primaryGenre") as string | null) ?? "").trim() || null;
-  const homeMarket = ((formData.get("homeMarket") as string | null) ?? "").trim() || null;
-  const specificGenres = ((formData.get("genres") as string | null) ?? "")
-    .split(",")
-    .map((genre) => genre.trim())
-    .filter((genre) => genre.length > 0);
-  const genres = Array.from(new Set([primaryGenre, ...specificGenres].filter(Boolean) as string[]));
-
-  return { stageName, bio, imageUrl, primaryGenre, homeMarket, genres };
+  return slugify(input, { maxLength: 72, fallback: "artist" });
 }
 
 export function parseArtistProfileTextFields(formData: FormData): Omit<ArtistProfileFields, "imageUrl"> {
