@@ -11,6 +11,7 @@ import {
 import { badgeStyles } from "@/components/ui/badge";
 import { buttonStyles } from "@/components/ui/button";
 import { helpTextClassName } from "@/components/ui/form";
+import { formatDate } from "@/lib/format-date";
 
 type AvailabilityStatus = "open" | "blocked";
 
@@ -37,15 +38,6 @@ function pad(n: number): string {
 
 function localDateStr(year: number, month: number, day: number): string {
   return `${year}-${pad(month + 1)}-${pad(day)}`;
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(`${value}T12:00:00Z`));
 }
 
 function coveredBy(date: string, windows: AvailabilityWindow[]): AvailabilityStatus | null {

@@ -2,6 +2,7 @@ import { createBookingRequest } from "@/app/booker/requests/actions";
 import { buttonStyles } from "@/components/ui/button";
 import { fieldClassName, labelClassName } from "@/components/ui/form";
 import { panelStyles } from "@/components/ui/panel";
+import { CAPACITY_BAND_OPTIONS, EVENT_TYPE_OPTIONS } from "@/lib/event-options";
 import type { PublicArtistProfile } from "@/server/catalog/types";
 import type { BookerEvent } from "@/db/schema";
 
@@ -49,11 +50,11 @@ export default function RequestBriefForm({
             <label className="grid gap-2">
               <span className={labelClassName}>Event type</span>
               <select name="eventType" className={fieldClassName} defaultValue="show">
-                <option value="show">Show</option>
-                <option value="festival">Festival</option>
-                <option value="club">Club</option>
-                <option value="private">Private</option>
-                <option value="brand">Brand</option>
+                {EVENT_TYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </label>
             <label className="grid gap-2">
@@ -76,10 +77,11 @@ export default function RequestBriefForm({
               <span className={labelClassName}>Capacity</span>
               <select name="capacityBand" className={fieldClassName} defaultValue="">
                 <option value="">Select capacity</option>
-                <option value="<500">&lt;500</option>
-                <option value="500-2k">500-2k</option>
-                <option value="2k-10k">2k-10k</option>
-                <option value="10k+">10k+</option>
+                {CAPACITY_BAND_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </label>
             <label className="grid gap-2">

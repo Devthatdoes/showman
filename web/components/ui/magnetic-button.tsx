@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 
 interface MagneticButtonProps {
   children: React.ReactNode;
@@ -10,7 +10,12 @@ interface MagneticButtonProps {
 }
 
 export default function MagneticButton({ children, className = "", onClick }: MagneticButtonProps) {
-  const [position, setPosition] = React.useState({ x: 0, y: 0 });
+  // Motion values instead of state: these buttons sit in the landing hero,
+  // and a setState per mousemove would re-render the button on every pixel.
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springX = useSpring(x, { stiffness: 150, damping: 15 });
+  const springY = useSpring(y, { stiffness: 150, damping: 15 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
     const { clientX, clientY, currentTarget } = e;
@@ -18,21 +23,21 @@ export default function MagneticButton({ children, className = "", onClick }: Ma
     const centerX = left + width / 2;
     const centerY = top + height / 2;
 
-    // Calculate distance from center to create the "pull" effect
-    const deltaX = (clientX - centerX) * 0.3;
-    const deltaY = (clientY - centerY) * 0.3;
-
-    setPosition({ x: deltaX, y: deltaY });
+    // Pull toward the cursor at a fraction of its distance from center
+    x.set((clientX - centerX) * 0.3);
+    y.set((clientY - centerY) * 0.3);
   };
 
-  const handleMouseLeave = () => setPosition({ x: 0, y: 0 });
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
 
   return (
     <motion.button
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      animate={{ x: position.x, y: position.y }}
-      transition={{ type: "spring", stiffness: 150, damping: 15 }}
+      style={{ x: springX, y: springY }}
       onClick={onClick}
       className={`relative overflow-hidden ${className}`}
     >

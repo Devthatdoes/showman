@@ -1,4 +1,5 @@
 import type { BookerProfile, Membership, Org } from "@/db/schema";
+import { slugify } from "@/lib/slugify";
 
 export type OnboardingIntent = "artist" | "booker";
 
@@ -8,12 +9,5 @@ export type ActorWorkspace = {
 };
 
 export function slugifyIdentity(input: string, fallback = "workspace"): string {
-  return (
-    input
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 80) || fallback
-  );
+  return slugify(input, { maxLength: 80, fallback });
 }

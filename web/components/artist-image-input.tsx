@@ -31,6 +31,10 @@ export default function ArtistImageInput({ existingImageUrl, required = false }:
         onChange={(event) => {
           const file = event.currentTarget.files?.[0];
           if (!file) return;
+          // Blob URLs live until the document unloads, so re-picking an image
+          // without revoking the previous preview leaks it. Only blob: URLs
+          // are ours to revoke; the initial preview may be a server image URL.
+          if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
           setPreviewUrl(URL.createObjectURL(file));
         }}
       />

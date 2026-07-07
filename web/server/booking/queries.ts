@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { artistProfiles, bookerEvents, bookerProfiles, bookingRequests } from "@/db/schema";
 import { getBookerProfileForUser } from "@/server/identity/queries";
-import { listManageableArtistProfiles } from "@/server/identity/authorize";
 import { and, desc, eq, inArray } from "drizzle-orm";
 
 // A booker's `draft` is private, unsent intent; `cancelled` is withdrawn. The artist
@@ -50,9 +49,10 @@ export async function getBookerDashboardData(userId: string): Promise<BookerDash
   return { profile, events, requests, statusCounts };
 }
 
-export async function listInboundRequestsForArtistTeam(userId: string): Promise<InboundRequestListItem[]> {
-  const artists = await listManageableArtistProfiles(userId);
-  const artistIds = artists.map((artist) => artist.id);
+// Takes artist ids rather than a user id so callers that already fetched the
+// manageable roster (the team page renders it too) don't pay for the
+// owned-artists + memberships query chain a second time.
+export async function listInboundRequestsForArtists(artistIds: string[]): Promise<InboundRequestListItem[]> {
   if (artistIds.length === 0) return [];
 
   const rows = await db

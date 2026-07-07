@@ -12,15 +12,7 @@ import { canManageArtist } from "@/server/identity/authorize";
 import { badgeStyles } from "@/components/ui/badge";
 import { buttonStyles } from "@/components/ui/button";
 import { panelStyles } from "@/components/ui/panel";
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(`${value}T12:00:00Z`));
-}
+import { formatDate } from "@/lib/format-date";
 
 export default async function ArtistProfilePage({
   params,
