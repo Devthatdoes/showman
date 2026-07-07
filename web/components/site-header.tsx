@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/session";
 import HomeLogoLink from "@/components/home-logo-link";
 import SignOutButton from "@/components/sign-out-button";
 
 export default async function SiteHeader() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const user = await getCurrentUser();
 
   return (
     <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-[rgba(13,13,13,0.7)] px-4 py-4 backdrop-blur-xl sm:px-8">
@@ -18,7 +17,7 @@ export default async function SiteHeader() {
           <Link href="/booking" className="hidden text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)] transition-colors hover:text-[var(--showman-orange)] sm:inline">
             Booking
           </Link>
-          {session && (
+          {user && (
             <>
               <Link href="/team" className="hidden text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)] transition-colors hover:text-[var(--showman-orange)] lg:inline">
                 Team
@@ -31,13 +30,13 @@ export default async function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-4 sm:gap-8">
-          {session ? (
+          {user ? (
             <>
               <Link
                 href="/account"
                 className="max-w-32 truncate text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-bone)] hover:text-[var(--showman-orange)] sm:max-w-none"
               >
-                {session.user.name || session.user.email}
+                {user.name || user.email}
               </Link>
               <SignOutButton />
             </>

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import Link from "next/link";
-import { auth } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/session";
 import { getActorWorkspace } from "@/server/identity/queries";
 import SignOutButton from "@/components/sign-out-button";
 import { buttonStyles } from "@/components/ui/button";
@@ -14,16 +13,14 @@ export default async function AccountPage({
 }: {
   searchParams: Promise<{ artist?: string }>;
 }) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const user = await getCurrentUser();
 
-  if (!session) {
+  if (!user) {
     redirect("/sign-in");
   }
 
-  const { user } = session;
   const { artist: requestedArtist } = await searchParams;
 
-  // Fetch actual workspaces instead of showing unconditional links
   const workspace = await getActorWorkspace(user.id);
 
   return (
@@ -61,7 +58,6 @@ export default async function AccountPage({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          {/* Dynamic Org/Team Workspaces */}
           {workspace.orgs.map((orgItem) => (
             <Link 
               key={orgItem.id} 
@@ -80,8 +76,6 @@ export default async function AccountPage({
             </Link>
           ))}
 
-
-          {/* Personal or Org-backed Booker Profile */}
           {workspace.bookerProfile && (
             <Link href="/booker" className={`${panelStyles("subtle")} block p-5 transition hover:border-[#ff8a2a]`}>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ffb06a]">
@@ -96,7 +90,6 @@ export default async function AccountPage({
             </Link>
           )}
 
-          {/* Setup Options for missing lanes */}
           {workspace.orgs.length === 0 && (
             <Link href="/onboarding" className={`${panelStyles("subtle")} block p-5 border-dashed border-2 border-white/10 transition hover:border-[#ff8a2a]`}>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/40">
