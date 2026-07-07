@@ -1,10 +1,7 @@
 import { redirect } from "next/navigation";
-import { db } from "@/db";
-import { user as authUser } from "@/db/auth-schema";
 import OnboardingFlow from "@/components/onboarding/onboarding-flow";
 import { getCurrentUser } from "@/lib/session";
-import { getActorWorkspace } from "@/server/identity/queries";
-import { eq } from "drizzle-orm";
+import { getActorWorkspace, getOnboardingIntentForUser } from "@/server/identity/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -17,15 +14,13 @@ export default async function OnboardingPage({
   if (!user) redirect("/sign-in");
 
   const { role, artist } = await searchParams;
-  const [accountUser] = await db
-    .select({ onboardingIntent: authUser.onboardingIntent })
-    .from(authUser)
-    .where(eq(authUser.id, user.id))
-    .limit(1);
-  const workspace = await getActorWorkspace(user.id);
+  const [savedIntent, workspace] = await Promise.all([
+    getOnboardingIntentForUser(user.id),
+    getActorWorkspace(user.id),
+  ]);
   const intent = role === "artist"
     ? "artist"
-    : role === "booker" || artist || accountUser?.onboardingIntent === "booker"
+    : role === "booker" || artist || savedIntent === "booker"
       ? "booker"
       : "artist";
 

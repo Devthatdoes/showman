@@ -1,11 +1,12 @@
 "use server";
 
-import { db } from "@/db";
-import { user as authUser } from "@/db/auth-schema";
 import { getCurrentUser } from "@/lib/session";
 import { getPublicArtistProfileBySlug } from "@/server/catalog/queries";
-import { ensureBookerProfileForUser, ensurePersonalOrgForUser } from "@/server/identity/mutations";
-import { eq } from "drizzle-orm";
+import {
+  ensureBookerProfileForUser,
+  ensurePersonalOrgForUser,
+  setOnboardingIntentForUser,
+} from "@/server/identity/mutations";
 import { redirect } from "next/navigation";
 
 function readString(formData: FormData, key: string) {
@@ -18,7 +19,7 @@ export async function completeArtistOnboarding(formData: FormData) {
 
   const workspaceName = readString(formData, "workspaceName") || user.name || "Showman";
   await ensurePersonalOrgForUser(user.id, workspaceName);
-  await db.update(authUser).set({ onboardingIntent: "artist" }).where(eq(authUser.id, user.id));
+  await setOnboardingIntentForUser(user.id, "artist");
   redirect("/team");
 }
 
@@ -33,7 +34,7 @@ export async function completeBookerOnboarding(formData: FormData) {
     shortDescriptor: readString(formData, "shortDescriptor"),
     credibilitySummary: readString(formData, "credibilitySummary"),
   });
-  await db.update(authUser).set({ onboardingIntent: "booker" }).where(eq(authUser.id, user.id));
+  await setOnboardingIntentForUser(user.id, "booker");
 
   const artist = readString(formData, "requestedArtist");
   if (artist && (await getPublicArtistProfileBySlug(artist))) {

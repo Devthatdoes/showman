@@ -1,9 +1,20 @@
 import { db } from "@/db";
+import { user as authUser } from "@/db/auth-schema";
 import { bookerProfiles, memberships, orgs, type BookerProfile, type Org } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { recordEvent } from "@/server/events/mutations";
 import { getBookerProfileForUser } from "./queries";
-import { slugifyIdentity } from "./types";
+import { slugifyIdentity, type OnboardingIntent } from "./types";
+
+export async function setOnboardingIntentForUser(
+  userId: string,
+  intent: OnboardingIntent,
+): Promise<void> {
+  await db
+    .update(authUser)
+    .set({ onboardingIntent: intent, updatedAt: new Date() })
+    .where(eq(authUser.id, userId));
+}
 
 function uniqueSlug(base: string) {
   return `${base}-${Date.now().toString(36).slice(-5)}`;
