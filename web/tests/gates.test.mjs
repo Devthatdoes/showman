@@ -11,11 +11,22 @@ const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const rand = () => Math.random().toString(36).slice(2, 10);
 
+// Better Auth rate-limits auth endpoints per client IP in production builds
+// (CI runs `next start`; sign-up allows ~3 requests per window). The suite
+// signs up 7 users back-to-back, so each signup presents a unique
+// x-forwarded-for — the header Better Auth derives the IP from.
+let signupCount = 0;
+
 async function signup(email) {
+  signupCount += 1;
   const res = await fetch(`${BASE}/api/auth/sign-up/email`, {
     method: "POST",
     // Better Auth enforces an Origin check (CSRF) on auth POSTs; send the app origin.
-    headers: { "content-type": "application/json", origin: BASE },
+    headers: {
+      "content-type": "application/json",
+      origin: BASE,
+      "x-forwarded-for": `10.77.${Math.floor(signupCount / 250)}.${(signupCount % 250) + 1}`,
+    },
     body: JSON.stringify({ email, password: "supersecret123", name: "Test" }),
   });
   const set = res.headers.getSetCookie?.() ?? [];
