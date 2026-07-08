@@ -259,6 +259,19 @@ test("cross-org agent: an active agent of a different org is redirected away", a
   assert.ok(!resAvail.url.endsWith("/availability"), "agent status in another org must not grant availability access");
 });
 
+test("owner: edit page explains a refused delete via the error query param", async () => {
+  const res = await visit(`/artists/${slug}/edit?error=has-bookings`, owner.cookie);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /can(&#x27;|')t be deleted because it has booking requests/);
+});
+
+test("owner: edit page shows no refusal message without the error query param", async () => {
+  const res = await visit(`/artists/${slug}/edit`, owner.cookie);
+  const body = await res.text();
+  assert.doesNotMatch(body, /can(&#x27;|')t be deleted because it has booking requests/);
+});
+
 test("owner: team dashboard shows inbound request for managed artist", async () => {
   const res = await visit("/team", owner.cookie);
   assert.equal(res.status, 200);

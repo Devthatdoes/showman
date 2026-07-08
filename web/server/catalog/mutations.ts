@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { artistProfiles, availabilityWindows, type ArtistProfile } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { artistProfiles, availabilityWindows, bookingRequests, type ArtistProfile } from "@/db/schema";
+import { and, count, eq } from "drizzle-orm";
 import { canManageArtist } from "@/server/identity/authorize";
 import { ensurePersonalOrgForUser } from "@/server/identity/mutations";
 import { getArtistProfileBySlug } from "./queries";
@@ -83,9 +83,45 @@ export async function updateOwnedArtistProfile(
   return profile.slug;
 }
 
+// Known refusal, not a bug: booking_requests.artist_id is ON DELETE RESTRICT
+// on purpose (booking records are business records). Callers catch this class
+// specifically and must rethrow everything else so Next.js redirect() control
+// flow is never swallowed.
+export class ArtistHasBookingsError extends Error {
+  constructor() {
+    super("Artist has booking requests and cannot be deleted");
+    this.name = "ArtistHasBookingsError";
+  }
+}
+
+function isForeignKeyViolation(error: unknown): boolean {
+  // Drizzle may wrap the pg error, so walk the cause chain for the
+  // Postgres foreign_key_violation code.
+  let current: unknown = error;
+  while (current instanceof Error) {
+    if ((current as { code?: unknown }).code === "23503") return true;
+    current = current.cause;
+  }
+  return false;
+}
+
 export async function deleteOwnedArtistProfile(ownerUserId: string, slug: string): Promise<void> {
   const profile = await requireOwnedArtist(ownerUserId, slug);
-  await db.delete(artistProfiles).where(eq(artistProfiles.id, profile.id));
+
+  const [{ value: requestCount }] = await db
+    .select({ value: count() })
+    .from(bookingRequests)
+    .where(eq(bookingRequests.artistId, profile.id));
+  if (requestCount > 0) throw new ArtistHasBookingsError();
+
+  try {
+    await db.delete(artistProfiles).where(eq(artistProfiles.id, profile.id));
+  } catch (error) {
+    // TOCTOU fallback: a request created between the pre-check and the delete
+    // trips the FK — surface it as the same known refusal, never a 500.
+    if (isForeignKeyViolation(error)) throw new ArtistHasBookingsError();
+    throw error;
+  }
   await deleteArtistImageUpload(profile.imageUrl);
 }
 

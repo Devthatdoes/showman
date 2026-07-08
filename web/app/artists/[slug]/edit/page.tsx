@@ -16,8 +16,16 @@ import { panelStyles } from "@/components/ui/panel";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditArtistPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function EditArtistPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   const { slug } = await params;
+  const { error } = await searchParams;
+  const deleteRefused = error === "has-bookings";
 
   const profile = await getArtistProfileBySlug(slug);
 
@@ -145,6 +153,13 @@ export default async function EditArtistPage({ params }: { params: Promise<{ slu
           <p className="mt-2 text-sm leading-6 text-[var(--showman-muted)]">
             Permanently delete this artist profile. This action cannot be undone.
           </p>
+          {deleteRefused && (
+            <p className="mt-3 text-sm leading-6 text-[var(--showman-danger)]">
+              This profile can&apos;t be deleted because it has booking requests. Booking
+              records are kept as business records, so a profile with any booking history
+              stays on the platform.
+            </p>
+          )}
           <form action={deleteArtistProfile} className="mt-4">
             <input type="hidden" name="slug" value={profile.slug} />
             <button type="submit" className={buttonStyles("danger")}>

@@ -23,6 +23,7 @@
   "homepage": "https://github.com/Devthatdoes/showman#readme",
   "devDependencies": {
     "@playwright/test": "^1.61.1",
-    "@types/node": "^26.0.1"
+    "@types/node": "^26.0.1",
+    "pg": "^8.22.0"
   }
 }
