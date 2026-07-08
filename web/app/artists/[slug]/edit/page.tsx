@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
+import { canManageArtist } from "@/server/identity/authorize";
 import { updateArtistProfile, deleteArtistProfile } from "@/app/artists/actions";
 import { getArtistProfileBySlug } from "@/server/catalog/queries";
 import ArtistImageInput from "@/components/artist-image-input";
@@ -23,7 +24,10 @@ export default async function EditArtistPage({ params }: { params: Promise<{ slu
   if (!profile) notFound();
 
   const user = await getCurrentUser();
-  if (!user || user.id !== profile.ownerUserId) redirect(`/artists/${slug}`);
+  // Mirror the mutation layer's authorization (requireOwnedArtist), not raw
+  // ownership: org agents are allowed to submit these forms, so they must be
+  // able to load them.
+  if (!user || !(await canManageArtist(user.id, profile))) redirect(`/artists/${slug}`);
   const specificGenres = profile.genres.filter((genre) => genre !== profile.primaryGenre);
 
   return (

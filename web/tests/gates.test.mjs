@@ -29,14 +29,20 @@ const visit = (path, cookie) =>
   fetch(`${BASE}${path}`, { headers: cookie ? { cookie } : {} });
 
 let owner, other, outsider, slug, incompleteSlug, imageOnlySlug, ownerOrgId, bookerProfileId, bookingRequestId, acceptedRequestId, draftRequestId;
+let agent, viewer, invitedAgent, crossAgent, orgArtistSlug, crossOrgId;
 
 before(async () => {
   owner = await signup(`owner_${rand()}@test.local`);
   other = await signup(`other_${rand()}@test.local`);
   outsider = await signup(`outsider_${rand()}@test.local`);
+  agent = await signup(`agent_${rand()}@test.local`);
+  viewer = await signup(`viewer_${rand()}@test.local`);
+  invitedAgent = await signup(`invited_agent_${rand()}@test.local`);
+  crossAgent = await signup(`cross_agent_${rand()}@test.local`);
   assert.ok(owner.userId, "owner signup should return a user id");
   assert.ok(other.userId, "other signup should return a user id");
   assert.ok(outsider.userId, "outsider signup should return a user id");
+  assert.ok(agent.userId && viewer.userId && invitedAgent.userId && crossAgent.userId, "org test signups should return user ids");
   slug = `ci-artist-${rand()}`;
   incompleteSlug = `ci-incomplete-${rand()}`;
   imageOnlySlug = `ci-image-only-${rand()}`;
@@ -85,6 +91,28 @@ before(async () => {
     [bookerProfileId, slug, "CI Draft Event", "Test Market", "A private unsent draft pitch."],
   );
   draftRequestId = draftRequest.rows[0].id;
+
+  // Org-managed artist: page access must match the mutation layer (canManageArtist),
+  // so seed the full membership matrix — agent-active (allowed), viewer-active,
+  // agent-invited, and an active agent of a DIFFERENT org (all denied).
+  orgArtistSlug = `ci-org-artist-${rand()}`;
+  await pool.query(
+    "insert into artist_profiles (slug, stage_name, image_url, primary_genre, genres, owner_user_id, org_id) values ($1, $2, $3, $4, $5::jsonb, $6, $7)",
+    [orgArtistSlug, "CI Org Artist", "/uploads/artists/ci-org.jpg", "Electronic", JSON.stringify(["Electronic"]), owner.userId, ownerOrgId],
+  );
+  await pool.query(
+    "insert into memberships (user_id, org_id, role, status) values ($1, $4, 'agent', 'active'), ($2, $4, 'viewer', 'active'), ($3, $4, 'agent', 'invited')",
+    [agent.userId, viewer.userId, invitedAgent.userId, ownerOrgId],
+  );
+  const crossOrg = await pool.query(
+    "insert into orgs (slug, name, type, owner_user_id) values ($1, $2, 'management', $3) returning id",
+    [`ci-cross-org-${rand()}`, "CI Cross Org", crossAgent.userId],
+  );
+  crossOrgId = crossOrg.rows[0].id;
+  await pool.query(
+    "insert into memberships (user_id, org_id, role, status) values ($1, $2, 'agent', 'active')",
+    [crossAgent.userId, crossOrgId],
+  );
 });
 
 after(async () => {
@@ -92,8 +120,11 @@ after(async () => {
   if (acceptedRequestId) await pool.query("delete from booking_requests where id = $1", [acceptedRequestId]);
   if (bookingRequestId) await pool.query("delete from booking_requests where id = $1", [bookingRequestId]);
   if (bookerProfileId) await pool.query("delete from booker_profiles where id = $1", [bookerProfileId]);
+  if (orgArtistSlug) await pool.query("delete from artist_profiles where slug = $1", [orgArtistSlug]);
   if (ownerOrgId) await pool.query("delete from memberships where org_id = $1", [ownerOrgId]);
   if (ownerOrgId) await pool.query("delete from orgs where id = $1", [ownerOrgId]);
+  if (crossOrgId) await pool.query("delete from memberships where org_id = $1", [crossOrgId]);
+  if (crossOrgId) await pool.query("delete from orgs where id = $1", [crossOrgId]);
   await pool.query("delete from artist_profiles where slug in ($1, $2, $3)", [slug, incompleteSlug, imageOnlySlug]);
   await pool.query("delete from \"user\" where email like '%@test.local'");
   await pool.end();
@@ -186,6 +217,46 @@ test("owner: can open availability management", async () => {
 test("non-owner: is redirected away from availability management", async () => {
   const res = await visit(`/artists/${slug}/availability`, other.cookie);
   assert.ok(!res.url.endsWith("/availability"), "a non-owner must not manage availability");
+});
+
+test("org agent: can open the edit page for an org-managed artist", async () => {
+  const res = await visit(`/artists/${orgArtistSlug}/edit`, agent.cookie);
+  assert.equal(res.status, 200);
+  assert.ok(res.url.endsWith("/edit"), "an active org agent should reach the edit page");
+});
+
+test("org agent: can open availability management for an org-managed artist", async () => {
+  const res = await visit(`/artists/${orgArtistSlug}/availability`, agent.cookie);
+  assert.equal(res.status, 200);
+  assert.ok(res.url.endsWith("/availability"), "an active org agent should reach availability");
+});
+
+test("org owner: still reaches the edit page for an org-managed artist", async () => {
+  const res = await visit(`/artists/${orgArtistSlug}/edit`, owner.cookie);
+  assert.equal(res.status, 200);
+  assert.ok(res.url.endsWith("/edit"));
+});
+
+test("org viewer: is redirected away from the edit page", async () => {
+  const res = await visit(`/artists/${orgArtistSlug}/edit`, viewer.cookie);
+  assert.ok(!res.url.endsWith("/edit"), "a viewer-role member must not reach edit");
+});
+
+test("org viewer: is redirected away from availability management", async () => {
+  const res = await visit(`/artists/${orgArtistSlug}/availability`, viewer.cookie);
+  assert.ok(!res.url.endsWith("/availability"), "a viewer-role member must not manage availability");
+});
+
+test("invited (not active) agent: is redirected away from the edit page", async () => {
+  const res = await visit(`/artists/${orgArtistSlug}/edit`, invitedAgent.cookie);
+  assert.ok(!res.url.endsWith("/edit"), "a non-active membership must not grant edit access");
+});
+
+test("cross-org agent: an active agent of a different org is redirected away", async () => {
+  const resEdit = await visit(`/artists/${orgArtistSlug}/edit`, crossAgent.cookie);
+  assert.ok(!resEdit.url.endsWith("/edit"), "agent status in another org must not grant edit access");
+  const resAvail = await visit(`/artists/${orgArtistSlug}/availability`, crossAgent.cookie);
+  assert.ok(!resAvail.url.endsWith("/availability"), "agent status in another org must not grant availability access");
 });
 
 test("owner: team dashboard shows inbound request for managed artist", async () => {
