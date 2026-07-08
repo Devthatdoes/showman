@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
+import { canManageArtist } from "@/server/identity/authorize";
 import { addAvailabilityWindow, deleteAvailabilityWindow } from "./actions";
 import {
   getArtistProfileBySlug,
@@ -31,7 +32,10 @@ export default async function AvailabilityPage({
   if (!artist) notFound();
 
   const user = await getCurrentUser();
-  if (!user || user.id !== artist.ownerUserId) redirect(`/artists/${slug}`);
+  // Mirror the mutation layer's authorization (requireOwnedArtist), not raw
+  // ownership: org agents are allowed to submit these forms, so they must be
+  // able to load them.
+  if (!user || !(await canManageArtist(user.id, artist))) redirect(`/artists/${slug}`);
 
   const windows = await listAvailabilityForArtist(artist.id);
 

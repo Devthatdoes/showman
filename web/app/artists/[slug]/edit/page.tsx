@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
+import { canManageArtist } from "@/server/identity/authorize";
 import { updateArtistProfile, deleteArtistProfile } from "@/app/artists/actions";
 import { getArtistProfileBySlug } from "@/server/catalog/queries";
 import ArtistImageInput from "@/components/artist-image-input";
@@ -15,15 +16,26 @@ import { panelStyles } from "@/components/ui/panel";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditArtistPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function EditArtistPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   const { slug } = await params;
+  const { error } = await searchParams;
+  const deleteRefused = error === "has-bookings";
 
   const profile = await getArtistProfileBySlug(slug);
 
   if (!profile) notFound();
 
   const user = await getCurrentUser();
-  if (!user || user.id !== profile.ownerUserId) redirect(`/artists/${slug}`);
+  // Mirror the mutation layer's authorization (requireOwnedArtist), not raw
+  // ownership: org agents are allowed to submit these forms, so they must be
+  // able to load them.
+  if (!user || !(await canManageArtist(user.id, profile))) redirect(`/artists/${slug}`);
   const specificGenres = profile.genres.filter((genre) => genre !== profile.primaryGenre);
 
   return (
@@ -141,6 +153,13 @@ export default async function EditArtistPage({ params }: { params: Promise<{ slu
           <p className="mt-2 text-sm leading-6 text-[var(--showman-muted)]">
             Permanently delete this artist profile. This action cannot be undone.
           </p>
+          {deleteRefused && (
+            <p className="mt-3 text-sm leading-6 text-[var(--showman-danger)]">
+              This profile can&apos;t be deleted because it has booking requests. Booking
+              records are kept as business records, so a profile with any booking history
+              stays on the platform.
+            </p>
+          )}
           <form action={deleteArtistProfile} className="mt-4">
             <input type="hidden" name="slug" value={profile.slug} />
             <button type="submit" className={buttonStyles("danger")}>

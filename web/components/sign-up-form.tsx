@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { saveOnboardingIntent } from "@/app/sign-up/actions";
 import { authClient } from "@/lib/auth-client";
@@ -15,7 +14,6 @@ type SignUpFormProps = {
 };
 
 export default function SignUpForm({ initialIntent, requestedArtist }: SignUpFormProps) {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,11 +30,22 @@ export default function SignUpForm({ initialIntent, requestedArtist }: SignUpFor
       setError(authError.message ?? "Sign up failed.");
       setPending(false);
     } else {
-      await saveOnboardingIntent(intent);
+      let result = await saveOnboardingIntent(intent);
+      if (!result.saved) {
+        // One retry covers the fresh-session cookie race right after sign-up.
+        result = await saveOnboardingIntent(intent);
+      }
+      if (!result.saved) {
+        // Never block sign-up on this: the role URL param carries the choice
+        // through onboarding, and completing onboarding persists intent too.
+        console.error(`Onboarding intent save failed twice (${result.reason})`);
+      }
       const params = new URLSearchParams({ role: intent });
       if (requestedArtist) params.set("artist", requestedArtist);
-      router.push(`/onboarding?${params.toString()}`);
-      router.refresh();
+      // Full document navigation, not router.push + router.refresh: the
+      // refresh raced the pending push and cancelled it (user stayed stuck on
+      // /sign-up), and a hard load also re-renders the header for the new session.
+      window.location.assign(`/onboarding?${params.toString()}`);
     }
   }
 
