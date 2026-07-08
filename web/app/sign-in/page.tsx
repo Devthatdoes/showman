@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { buttonStyles } from "@/components/ui/button";
@@ -9,7 +8,6 @@ import { fieldClassName, labelClassName } from "@/components/ui/form";
 import { panelStyles } from "@/components/ui/panel";
 
 export default function SignInPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,8 +22,9 @@ export default function SignInPage() {
       setError(authError.message ?? "Sign in failed.");
       setPending(false);
     } else {
-      router.push("/account");
-      router.refresh();
+      // Full document navigation: router.refresh() raced the pending push and
+      // cancelled it, and a hard load re-renders the header for the new session.
+      window.location.assign("/account");
     }
   }
 

@@ -129,6 +129,78 @@ test('request access enters the booker onboarding lane', async ({ page }) => {
   await expect(page.getByRole('radio', { name: /artist \/ team/i })).not.toBeChecked();
 });
 
+test.describe('sign-up intent persistence', () => {
+  test.skip(!DATABASE_URL, 'DATABASE_URL is required for DB-backed intent tests');
+
+  /** @param {string} email */
+  async function intentFor(email) {
+    const row = await db().query('select onboarding_intent from "user" where email = $1', [email]);
+    return row.rows[0]?.onboarding_intent ?? null;
+  }
+
+  /**
+   * @param {import('@playwright/test').Page} page
+   * @param {string} email
+   * @param {'artist' | 'booker'} role
+   */
+  async function signUpThroughForm(page, email, role) {
+    await page.goto('/sign-up');
+    await page.getByText(role === 'booker' ? /booker \/ promoter/i : /artist \/ team/i).click();
+    await page.getByLabel(/name/i).first().fill('PW Intent Test');
+    await page.getByLabel(/email/i).fill(email);
+    await page.getByLabel(/password/i).fill('supersecret123');
+    await page.getByRole('button', { name: /create account/i }).click();
+    // Sign-up plus the intent server action can take a while on a dev server
+    // (route compilation on first hit), so give navigation extra headroom.
+    await expect(page).toHaveURL(new RegExp(`/onboarding\\?role=${role}`), { timeout: 20_000 });
+  }
+
+  test('choosing booker at sign-up persists booker intent', async ({ page }) => {
+    const email = `pw_intent_booker_${rand()}@test.local`;
+    try {
+      await signUpThroughForm(page, email, 'booker');
+      expect(await intentFor(email)).toBe('booker');
+    } finally {
+      await deleteUsers([email]);
+    }
+  });
+
+  test('choosing artist at sign-up persists artist intent', async ({ page }) => {
+    const email = `pw_intent_artist_${rand()}@test.local`;
+    try {
+      await signUpThroughForm(page, email, 'artist');
+      expect(await intentFor(email)).toBe('artist');
+    } finally {
+      await deleteUsers([email]);
+    }
+  });
+
+  test('onboarding completion persists intent even when the early save missed', async ({ page }) => {
+    const email = `pw_intent_fallback_${rand()}@test.local`;
+    let bookerProfileId;
+    try {
+      await signUpThroughForm(page, email, 'booker');
+      // Simulate the cookie race having lost the early save (R6): the flow
+      // must still recover when the user completes onboarding.
+      await db().query('update "user" set onboarding_intent = null where email = $1', [email]);
+
+      await page.getByLabel(/display name/i).fill('PW Fallback Booker');
+      await page.getByRole('button', { name: /continue to booker dashboard/i }).click();
+      await expect(page).toHaveURL(/\/booker/, { timeout: 20_000 });
+
+      expect(await intentFor(email)).toBe('booker');
+      const profile = await db().query(
+        'select id from booker_profiles where owner_user_id = (select id from "user" where email = $1)',
+        [email],
+      );
+      bookerProfileId = profile.rows[0]?.id;
+    } finally {
+      if (bookerProfileId) await db().query('delete from booker_profiles where id = $1', [bookerProfileId]);
+      await deleteUsers([email]);
+    }
+  });
+});
+
 test.describe('artist deletion guard', () => {
   test.skip(!DATABASE_URL, 'DATABASE_URL is required for DB-backed deletion tests');
 

@@ -1,19 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { buttonStyles } from "@/components/ui/button";
 
 export default function SignOutButton() {
-  const router = useRouter();
   const [pending, setPending] = useState(false);
 
   async function handleSignOut() {
     setPending(true);
     await authClient.signOut();
-    router.push("/");
-    router.refresh();
+    // Full document navigation: router.refresh() raced the pending push and
+    // cancelled it, and a hard load re-renders the header for the ended session.
+    window.location.assign("/");
   }
 
   return (
