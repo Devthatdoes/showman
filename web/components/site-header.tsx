@@ -1,10 +1,17 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
+import { getActorWorkspace } from "@/server/identity/queries";
 import HomeLogoLink from "@/components/home-logo-link";
 import SignOutButton from "@/components/sign-out-button";
 
 export default async function SiteHeader() {
   const user = await getCurrentUser();
+  // Dashboard links reflect actual capability, not just "signed in": Team
+  // needs an active org membership, Booker needs a booker profile. Same
+  // source /booking uses to decide what a user can act as.
+  const workspace = user ? await getActorWorkspace(user.id) : null;
+  const showTeam = (workspace?.orgs.length ?? 0) > 0;
+  const showBooker = Boolean(workspace?.bookerProfile);
 
   return (
     <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-[rgba(13,13,13,0.7)] px-4 py-4 backdrop-blur-xl sm:px-8">
@@ -17,15 +24,15 @@ export default async function SiteHeader() {
           <Link href="/booking" className="hidden text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)] transition-colors hover:text-[var(--showman-orange)] sm:inline">
             Booking
           </Link>
-          {user && (
-            <>
-              <Link href="/team" className="hidden text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)] transition-colors hover:text-[var(--showman-orange)] lg:inline">
-                Team
-              </Link>
-              <Link href="/booker" className="hidden text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)] transition-colors hover:text-[var(--showman-orange)] lg:inline">
-                Booker
-              </Link>
-            </>
+          {showTeam && (
+            <Link href="/team" className="hidden text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)] transition-colors hover:text-[var(--showman-orange)] lg:inline">
+              Team
+            </Link>
+          )}
+          {showBooker && (
+            <Link href="/booker" className="hidden text-xs font-bold uppercase tracking-[0.18em] text-[var(--showman-muted)] transition-colors hover:text-[var(--showman-orange)] lg:inline">
+              Booker
+            </Link>
           )}
         </div>
 

@@ -283,6 +283,34 @@ test("owner: edit page shows no refusal message without the error query param", 
   assert.doesNotMatch(body, /can(&#x27;|')t be deleted because it has booking requests/);
 });
 
+test("header: org member sees Team but not Booker", async () => {
+  const res = await visit("/artists", owner.cookie);
+  const body = await res.text();
+  assert.match(body, /href="\/team"/, "an org member should see the Team link");
+  assert.doesNotMatch(body, /href="\/booker"/, "no booker profile means no Booker link");
+});
+
+test("header: booker sees Booker but not Team", async () => {
+  const res = await visit("/artists", other.cookie);
+  const body = await res.text();
+  assert.match(body, /href="\/booker"/, "a booker should see the Booker link");
+  assert.doesNotMatch(body, /href="\/team"/, "no org membership means no Team link");
+});
+
+test("header: signed-in user with no capabilities sees neither dashboard link", async () => {
+  const res = await visit("/artists", outsider.cookie);
+  const body = await res.text();
+  assert.doesNotMatch(body, /href="\/team"/);
+  assert.doesNotMatch(body, /href="\/booker"/);
+});
+
+test("header: anonymous visitor sees neither dashboard link", async () => {
+  const res = await visit("/artists");
+  const body = await res.text();
+  assert.doesNotMatch(body, /href="\/team"/);
+  assert.doesNotMatch(body, /href="\/booker"/);
+});
+
 test("owner: team dashboard shows inbound request for managed artist", async () => {
   const res = await visit("/team", owner.cookie);
   assert.equal(res.status, 200);
